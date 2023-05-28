@@ -1,0 +1,10 @@
+---
+services:
+  maildev:
+    image: maildev/maildev:2.0.5
+    environment:
+      MAILDEV_SMTP_PORT: 1025
+      MAILDEV_WEB_PORT: 1080
+    ports:
+      - 1025:1025
+      - 1080:1080

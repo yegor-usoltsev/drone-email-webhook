@@ -1,0 +1,18 @@
+# Source: https://github.com/github/gitignore/blob/main/community/Golang/Go.AllowList.gitignore
+
+# Ignore everything
+*
+
+# But not these files...
+!/.github/workflows/ci.yml
+!/.dockerignore
+!/.gitignore
+!/Dockerfile
+!/LICENSE
+!/README.md
+!/go.mod
+!/go.sum
+!*.go
+
+# ...even if they are in subdirectories
+!*/

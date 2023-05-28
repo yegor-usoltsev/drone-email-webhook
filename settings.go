@@ -2,13 +2,12 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/kelseyhightower/envconfig"
 )
 
-const EnvPrefix = "PLUGIN_"
+const envPrefix = "APP"
 
 type Settings struct {
 	ServerHost            string        `split_words:"true" default:"0.0.0.0"`
@@ -29,11 +28,11 @@ type Settings struct {
 
 func NewSettingsFromEnv() Settings {
 	var settings Settings
-	err := envconfig.Process(EnvPrefix, &settings)
+	err := envconfig.Process(envPrefix, &settings)
 	if err != nil {
-		_ = envconfig.Usage(EnvPrefix, &settings)
+		_ = envconfig.Usage(envPrefix, &settings)
 		fmt.Println()
-		log.Panicln(err)
+		panic(err)
 	}
 	return settings
 }

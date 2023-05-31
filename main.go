@@ -12,6 +12,7 @@ func main() {
 	webhookHandler := NewWebhookHandler(settings, emailSender)
 
 	router := chi.NewRouter()
+	router.Use(middleware.Logger)
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.Timeout(HandlerTimeout))
 	router.Use(middleware.Heartbeat("/health"))

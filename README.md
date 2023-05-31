@@ -7,28 +7,24 @@
 
 Webhook listener for Drone CI / CD notifying commit authors of failed builds via email.
 
+![Screenshot](screenshot.png)
+
 ## Usage
 
 TODO
 
 ### Environment Variables
 
-| KEY                           | TYPE       | DEFAULT                            |
-|-------------------------------|------------|------------------------------------|
-| `APP_SERVER_HOST`             | `String`   | `0.0.0.0`                          |
-| `APP_SERVER_PORT`             | `Integer`  | `8080`                             |
-| `APP_SERVER_MAX_HEADER_BYTES` | `Integer`  | `4096` (4 * 1024 = 4 KB)           |
-| `APP_SERVER_MAX_BODY_BYTES`   | `Integer`  | `1048576` (1 * 1024 * 1024 = 1 MB) |
-| `APP_SERVER_READ_TIMEOUT`     | `Duration` | `15s`                              |
-| `APP_SERVER_HANDLER_TIMEOUT`  | `Duration` | `10s`                              |
-| `APP_SERVER_WRITE_TIMEOUT`    | `Duration` | `15s`                              |
-| `APP_SERVER_IDLE_TIMEOUT`     | `Duration` | `120s`                             |
-| `APP_SERVER_SHUTDOWN_TIMEOUT` | `Duration` | `15s`                              |
-| `APP_EMAIL_SMTP_HOST`         | `String`   | `localhost`                        |
-| `APP_EMAIL_SMTP_PORT`         | `Integer`  | `1025`                             |
-| `APP_EMAIL_SMTP_USERNAME`     | `String`   | `maildev`                          |
-| `APP_EMAIL_SMTP_PASSWORD`     | `String`   | `maildev`                          |
-| `APP_EMAIL_FROM`              | `String`   | `Drone <drone@example.com>`        |
+| KEY                         | TYPE      | DEFAULT             |
+|-----------------------------|-----------|---------------------|
+| `DRONE_SECRET`              | `String`  |                     |
+| `DRONE_SERVER_HOST`         | `String`  | `0.0.0.0`           |
+| `DRONE_SERVER_PORT`         | `Integer` | `3000`              |
+| `DRONE_EMAIL_SMTP_HOST`     | `String`  | `localhost`         |
+| `DRONE_EMAIL_SMTP_PORT`     | `Integer` | `1025`              |
+| `DRONE_EMAIL_SMTP_USERNAME` | `String`  | `maildev`           |
+| `DRONE_EMAIL_SMTP_PASSWORD` | `String`  | `maildev`           |
+| `DRONE_EMAIL_FROM`          | `String`  | `drone@example.com` |
 
 ## Docker Images
 

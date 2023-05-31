@@ -1,25 +1,21 @@
 package main
 
 import (
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/recover"
-	"github.com/gofiber/fiber/v2/middleware/timeout"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 func main() {
 	settings := NewSettingsFromEnv()
+	server := NewServer(settings)
+	emailSender := NewEmailSender(settings)
+	webhookHandler := NewWebhookHandler(settings, emailSender)
 
-	server := NewFiber(settings)
+	router := chi.NewRouter()
+	router.Use(middleware.Recoverer)
+	router.Use(middleware.Timeout(HandlerTimeout))
+	router.Use(middleware.Heartbeat("/health"))
+	router.Post("/", webhookHandler.ServeHTTP)
 
-	server.Use(recover.New())
-
-	withTimeout := func(handler fiber.Handler) fiber.Handler {
-		return timeout.NewWithContext(handler, settings.ServerHandlerTimeout)
-	}
-
-	server.Get("/health", withTimeout(func(c *fiber.Ctx) error {
-		return c.SendString("OK")
-	}))
-
-	server.ListenGracefully()
+	server.ListenAndServe(router)
 }

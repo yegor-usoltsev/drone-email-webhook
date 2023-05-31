@@ -9,8 +9,10 @@
 !/.gitignore
 !/docker-compose.yml
 !/Dockerfile
+!/email.html
 !/LICENSE
 !/README.md
+!/screenshot.png
 !/go.mod
 !/go.sum
 !*.go

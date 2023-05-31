@@ -1,170 +1,124 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html lang="en" xml:lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
-    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type"/>
-    <meta content="IE=edge" http-equiv="X-UA-Compatible"/>
-    <meta name="x-apple-disable-message-reformatting"/>
-    <meta content="width=device-width, initial-scale=1" name="viewport"/>
-    <meta content="telephone=no, date=no, address=no, email=no, url=no" name="format-detection"/>
-    <meta content="light dark" name="color-scheme"/>
-    <meta content="light dark" name="supported-color-schemes"/>
-    <!--[if mso]>
-    <noscript>
-        <xml>
-            <o:OfficeDocumentSettings xmlns:o="urn:schemas-microsoft-com:office:office">
-                <o:PixelsPerInch>96</o:PixelsPerInch>
-            </o:OfficeDocumentSettings>
-        </xml>
-    </noscript>
-    <style>
-        td, th, div, p, a, h1, h2, h3, h4, h5, h6 {
-            font-family: "Segoe UI", sans-serif;
-            mso-line-height-rule: exactly;
-        }
-    </style>
-    <![endif]-->
-    <title>{{.Subject}}</title>
-    <style>
-        .hover-important-text-decoration-underline:hover {
-            text-decoration: underline !important
-        }
-
-        @media (max-width: 600px) {
-            .sm-my-8 {
-                margin-top: 32px !important;
-                margin-bottom: 32px !important
-            }
-
-            .sm-px-4 {
-                padding-left: 16px !important;
-                padding-right: 16px !important
-            }
-        }
-    </style>
+<meta content="text/html; charset=UTF-8" http-equiv="Content-Type"/>
+<meta content="IE=edge" http-equiv="X-UA-Compatible"/>
+<meta name="x-apple-disable-message-reformatting"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<meta content="telephone=no, date=no, address=no, email=no, url=no" name="format-detection"/>
+<meta content="light" name="color-scheme"/>
+<meta content="light" name="supported-color-schemes"/>
+<!--[if mso]>
+<noscript>
+<xml>
+<o:OfficeDocumentSettings xmlns:o="urn:schemas-microsoft-com:office:office">
+<o:PixelsPerInch>96</o:PixelsPerInch>
+</o:OfficeDocumentSettings>
+</xml>
+</noscript>
+<style>a,div,h1,h2,h3,h4,h5,h6,p,td,th{font-family:"Segoe UI",sans-serif;mso-line-height-rule:exactly}</style>
+<![endif]-->
+<title>{{.Subject}}</title>
+<style>.hover-important-text-decoration-underline:hover{text-decoration:underline!important}@media (max-width:600px){.sm-my-8{margin-top:32px!important;margin-bottom:32px!important}.sm-px-4{padding-left:16px!important;padding-right:16px!important}}</style>
 </head>
-<body style="margin: 0; width: 100%; background-color: #f8fafc; padding: 0; -webkit-font-smoothing: antialiased; word-break: break-word">
+<body style="margin:0;width:100%;background-color:#f8fafc;padding:0;-webkit-font-smoothing:antialiased;word-break:break-word">
 <div aria-label="{{.Subject}}" aria-roledescription="email" lang="en" role="article">
-    <div class="sm-px-4"
-         style="background-color: #f8fafc; font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif">
-        <table align="center" cellpadding="0" cellspacing="0" role="presentation">
-            <tr>
-                <td style="width: 552px; max-width: 100%">
-                    <div class="sm-my-8" style="margin-top: 48px; margin-bottom: 48px; text-align: center">
-                        <a href="{{.DroneServerLink}}">
-                            <svg style="width: 64px" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-                                <path d="m40.288 19.38-.858.858 35.046 35.047c-4.955 7.737-7.81 17.24-7.81 28.048 0 30.048 22.06 50 50 50 10.441 0 20.061-2.786 28.015-7.843l35.226 35.225C161.655 184.822 132.653 200 100 200 44.78 200 0 156.593 0 100c0-33.656 15.837-62.648 40.288-80.62Zm16.67-9.897C69.996 3.38 84.592 0 100 0c55.22 0 100 43.407 100 100 0 15.566-3.388 30.134-9.448 43.076l-31.695-31.695c4.955-7.737 7.81-17.239 7.81-28.048 0-30.048-22.06-50-50-50-10.441 0-20.06 2.786-28.015 7.844L56.96 9.483Zm59.709 103.85c-16.765 0-30-11.97-30-30 0-18.029 13.235-30 30-30 16.764 0 30 11.971 30 30 0 18.03-13.236 30-30 30Z"
-                                      fill="#1E375A"
-                                      fill-rule="evenodd"></path>
-                            </svg>
-                        </a>
-                    </div>
-                    <table cellpadding="0" cellspacing="0" role="presentation" style="width: 100%;">
-                        <tr>
-                            <td style="border-radius: 4px; background-color: #fff; padding: 24px; font-size: 16px; color: #334155; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05)">
-                                <table cellpadding="0" cellspacing="0" role="presentation"
-                                       style="margin-bottom: 24px; width: 100%">
-                                    <tr>
-                                        <td colspan="2"
-                                            style="border-radius: 4px; background-color: #ef4444; padding: 12px 16px; text-align: center; font-size: 16px; font-weight: 600; line-height: 1; color: #f8fafc">
-                                            {{.Header}}
-                                        </td>
-                                    </tr>
-                                </table>
-                                <table cellpadding="0"
-                                       cellspacing="0" role="presentation"
-                                       style="margin-bottom: 24px; width: 100%; table-layout: fixed; font-size: 14px">
-                                    <tr>
-                                        <td style="width: 33.333333%; padding-top: 12px; padding-bottom: 12px; padding-right: 12px">
-                                            Repository
-                                        </td>
-                                        <td style="width: 66.666667%; padding-top: 12px; padding-bottom: 12px">
-                                            {{.Repository}}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td style="width: 33.333333%; padding-top: 12px; padding-bottom: 12px; padding-right: 12px;">
-                                            Reference
-                                        </td>
-                                        <td style="width: 66.666667%; padding-top: 12px; padding-bottom: 12px;">
-                                            <svg fill="none"
-                                                 style="display: inline-block; width: 20px; vertical-align: middle"
-                                                 viewBox="0 0 24 24"
-                                                 xmlns="http://www.w3.org/2000/svg">
-                                                <path d="M6 5v8m10-2a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM6 19a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"
-                                                      stroke="currentColor"
-                                                      stroke-linecap="round" stroke-linejoin="round"
-                                                      stroke-width="2"/>
-                                                <path d="M16 11c0 1.326-.738 2.598-2.05 3.536C12.637 15.473 10.857 16 9 16"
-                                                      stroke="currentColor"
-                                                      stroke-linecap="round" stroke-linejoin="round"
-                                                      stroke-width="2"/>
-                                            </svg>
-                                            {{.Reference}}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td style="width: 33.333333%; padding-top: 12px; padding-bottom: 12px; padding-right: 12px;">
-                                            Commit
-                                        </td>
-                                        <td style="width: 66.666667%; padding-top: 12px; padding-bottom: 12px;">
-                                            <svg style="display: inline-block; width: 20px; vertical-align: middle"
-                                                 viewBox="0 0 24 24"
-                                                 xmlns="http://www.w3.org/2000/svg">
-                                                <path d="M0 0h24v24H0z" fill="none"/>
-                                                <path d="M15.874 13a4.002 4.002 0 0 1-7.748 0H3v-2h5.126a4.002 4.002 0 0 1 7.748 0H21v2h-5.126zM12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"
-                                                      fill="currentColor"/>
-                                            </svg>
-                                            {{.CommitHash}}
-                                            <p style="margin: 12px 0 0">{{.CommitMessage}}</p>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td style="width: 33.333333%; padding-top: 12px; padding-bottom: 12px; padding-right: 12px;">
-                                            Commit Author
-                                        </td>
-                                        <td style="width: 66.666667%; padding-top: 12px; padding-bottom: 12px;">
-                                            <img alt="{{.AuthorName}}"
-                                                 src="{{.AuthorAvatar}}"
-                                                 style="display: inline-block; height: 24px; width: 24px; border-radius: 9999px; object-fit: cover; vertical-align: middle">
-                                            {{.AuthorName}}
-                                        </td>
-                                    </tr>
-                                </table>
-                                <div style="text-align: center;">
-                                    <a href="{{.DroneBuildLink}}"
-                                       style="display: inline-block; border-radius: 4px; background-color: #0284c7; padding: 12px 16px; font-size: 16px; font-weight: 600; line-height: 1; color: #f8fafc; text-decoration: none">
-                                        <!--[if mso]>
-                                          <i style="mso-font-width: -100%; letter-spacing: 32px; mso-text-raise: 30px" hidden>&nbsp;</i>
-                                        <![endif]-->
-                                        <span style="mso-text-raise: 16px">
-                                            View build
-                                        </span>
-                                        <!--[if mso]>
-                                          <i style="mso-font-width: -100%; letter-spacing: 32px;" hidden>&nbsp;</i>
-                                        <![endif]-->
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr role="separator">
-                            <td style="line-height: 24px">&zwj;</td>
-                        </tr>
-                        <tr>
-                            <td style="padding-left: 24px; padding-right: 24px; text-align: center; font-size: 12px; color: #475569">
-                                <p style="cursor: default">
-                                    You're receiving this email because of your account on
-                                    <a class="hover-important-text-decoration-underline"
-                                       href="{{.DroneServerLink}}"
-                                       style="color: #0369a1; text-decoration: none">{{.DroneServerHost}}</a>
-                                </p>
-                            </td>
-                        </tr>
-                    </table>
-                </td>
-            </tr>
-        </table>
-    </div>
+<div class="sm-px-4" style="background-color:#f8fafc;font-family:ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif">
+<table align="center" cellpadding="0" cellspacing="0" role="presentation">
+<tr>
+<td style="width:552px;max-width:100%">
+<div class="sm-my-8" style="margin-top:48px;margin-bottom:48px;text-align:center">
+<a href="{{.DroneServerLink}}">
+<svg style="width:64px" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+<path d="m40.288 19.38-.858.858 35.046 35.047c-4.955 7.737-7.81 17.24-7.81 28.048 0 30.048 22.06 50 50 50 10.441 0 20.061-2.786 28.015-7.843l35.226 35.225C161.655 184.822 132.653 200 100 200 44.78 200 0 156.593 0 100c0-33.656 15.837-62.648 40.288-80.62Zm16.67-9.897C69.996 3.38 84.592 0 100 0c55.22 0 100 43.407 100 100 0 15.566-3.388 30.134-9.448 43.076l-31.695-31.695c4.955-7.737 7.81-17.239 7.81-28.048 0-30.048-22.06-50-50-50-10.441 0-20.06 2.786-28.015 7.844L56.96 9.483Zm59.709 103.85c-16.765 0-30-11.97-30-30 0-18.029 13.235-30 30-30 16.764 0 30 11.971 30 30 0 18.03-13.236 30-30 30Z" fill="#1E375A" fill-rule="evenodd"/>
+</svg>
+</a>
+</div>
+<table cellpadding="0" cellspacing="0" role="presentation" style="width:100%">
+<tr>
+<td style="border-radius:4px;background-color:#fff;padding:24px;font-size:16px;color:#334155;box-shadow:0 1px 2px 0 rgba(0,0,0,0.05)">
+<table cellpadding="0" cellspacing="0" role="presentation" style="margin-bottom:24px;width:100%">
+<tr>
+<td colspan="2" style="border-radius:4px;background-color:#ef4444;padding:12px 16px;text-align:center;font-size:16px;font-weight:600;line-height:1;color:#f8fafc">
+{{.Header}}
+</td>
+</tr>
+</table>
+<table cellpadding="0" cellspacing="0" role="presentation" style="margin-bottom:24px;width:100%;table-layout:fixed;font-size:14px">
+<tr>
+<td style="width:33.333333%;padding-top:12px;padding-bottom:12px;padding-right:12px">
+Repository
+</td>
+<td style="width:66.666667%;padding-top:12px;padding-bottom:12px">
+{{.Repository}}
+</td>
+</tr>
+<tr>
+<td style="width:33.333333%;padding-top:12px;padding-bottom:12px;padding-right:12px">
+Reference
+</td>
+<td style="width:66.666667%;padding-top:12px;padding-bottom:12px">
+<svg fill="none" style="display:inline-block;width:20px;vertical-align:middle" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M6 5v8m10-2a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM6 19a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+<path d="M16 11c0 1.326-.738 2.598-2.05 3.536C12.637 15.473 10.857 16 9 16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+</svg>
+{{.Reference}}
+</td>
+</tr>
+<tr>
+<td style="width:33.333333%;padding-top:12px;padding-bottom:12px;padding-right:12px">
+Commit
+</td>
+<td style="width:66.666667%;padding-top:12px;padding-bottom:12px">
+<svg style="display:inline-block;width:20px;vertical-align:middle" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M0 0h24v24H0z" fill="none"/>
+<path d="M15.874 13a4.002 4.002 0 0 1-7.748 0H3v-2h5.126a4.002 4.002 0 0 1 7.748 0H21v2h-5.126zM12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4z" fill="currentColor"/>
+</svg>
+{{.CommitHash}}
+<p style="margin:12px 0 0">{{.CommitMessage}}</p>
+</td>
+</tr>
+<tr>
+<td style="width:33.333333%;padding-top:12px;padding-bottom:12px;padding-right:12px">
+Commit Author
+</td>
+<td style="width:66.666667%;padding-top:12px;padding-bottom:12px">
+<img alt="{{.AuthorName}}" src="{{.AuthorAvatar}}" style="display:inline-block;height:24px;width:24px;border-radius:9999px;object-fit:cover;vertical-align:middle">
+{{.AuthorName}}
+</td>
+</tr>
+</table>
+<div style="text-align:center">
+<a href="{{.DroneBuildLink}}" style="display:inline-block;border-radius:4px;background-color:#0284c7;padding:12px 16px;font-size:16px;font-weight:600;line-height:1;color:#f8fafc;text-decoration:none">
+<!--[if mso]>
+<i style="mso-font-width:-100%;letter-spacing:32px;mso-text-raise:30px" hidden>&nbsp;</i>
+<![endif]-->
+<span style="mso-text-raise:16px">
+View build
+</span>
+<!--[if mso]>
+<i style="mso-font-width:-100%;letter-spacing:32px" hidden>&nbsp;</i>
+<![endif]-->
+</a>
+</div>
+</td>
+</tr>
+<tr role="separator">
+<td style="line-height:24px">&zwj;</td>
+</tr>
+<tr>
+<td style="padding-left:24px;padding-right:24px;text-align:center;font-size:12px;color:#475569">
+<p style="cursor:default">
+You're receiving this email because of your account on
+<a class="hover-important-text-decoration-underline" href="{{.DroneServerLink}}" style="color:#0369a1;text-decoration:none">{{.DroneServerHost}}</a>
+</p>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+</table>
+</div>
 </div>
 </body>
 </html>

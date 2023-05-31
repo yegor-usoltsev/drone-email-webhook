@@ -40,10 +40,8 @@ func (h *WebhookHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if req.Event == webhook.EventBuild && req.Action == webhook.ActionUpdated && req.Build.Status == "failure" {
-		go func() {
-			log.Printf("webhook: processing event for build #%d in repo %s\n", req.Build.ID, req.Repo.Slug)
-			h.emailSender.Send(req)
-		}()
+		log.Printf("webhook: processing event for build #%d in repo %s\n", req.Build.ID, req.Repo.Slug)
+		h.emailSender.Send(req)
 	}
 
 	w.WriteHeader(http.StatusNoContent)

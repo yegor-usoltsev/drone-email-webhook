@@ -22,7 +22,7 @@ type Settings struct {
 func NewSettingsFromEnv() Settings {
 	var settings Settings
 	if err := envconfig.Process(envPrefix, &settings); err != nil {
-		log.Fatalln(err)
+		log.Fatalln("settings:", err)
 	}
 	return settings
 }

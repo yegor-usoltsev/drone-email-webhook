@@ -38,7 +38,7 @@ func (s *Server) ListenAndServe(handler http.Handler) {
 	shutdownCh := make(chan os.Signal, 1)
 	signal.Notify(shutdownCh, os.Interrupt, os.Kill)
 	go func() {
-		log.Println("Server received signal:", <-shutdownCh)
+		log.Println("server: received signal:", <-shutdownCh)
 		s.cancelServerCtx()
 	}()
 
@@ -53,23 +53,23 @@ func (s *Server) ListenAndServe(handler http.Handler) {
 	go func() {
 		listener, err := net.Listen("tcp", s.addr)
 		if err != nil {
-			log.Println("Unable to listen:", err)
+			log.Println("server: unable to listen:", err)
 			s.cancelServerCtx()
 			return
 		}
-		log.Println("Server is listening on", listener.Addr())
+		log.Println("server: listening on", listener.Addr())
 		if err = srv.Serve(listener); err != nil && err != http.ErrServerClosed {
-			log.Println("Unable to serve:", err)
+			log.Println("server: unable to serve:", err)
 			s.cancelServerCtx()
 		}
 	}()
 
 	<-s.serverCtx.Done()
-	log.Println("Server is shutting down")
+	log.Println("server: shutting down")
 	shutdownCtx, cancelShutdownCtx := context.WithTimeout(context.Background(), ShutdownTimeout)
 	defer cancelShutdownCtx()
 	if err := srv.Shutdown(shutdownCtx); err != nil {
-		log.Fatalln("Server failed to shut down properly:", err)
+		log.Fatalln("server: failed to shut down properly:", err)
 	}
-	log.Println("Server shut down properly")
+	log.Println("server: shut down properly")
 }

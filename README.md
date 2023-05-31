@@ -7,7 +7,7 @@
 
 Webhook listener for Drone CI / CD notifying commit authors of failed builds via email.
 
-![Screenshot](screenshot.png)
+![Screenshot](https://raw.githubusercontent.com/yegor-usoltsev/drone-email-webhook/main/.github/screenshot.png)
 
 ## Usage
 

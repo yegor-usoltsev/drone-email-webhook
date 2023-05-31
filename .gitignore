@@ -5,6 +5,7 @@
 
 # But not these files...
 !/.github/workflows/ci.yml
+!/.github/screenshot.png
 !/.dockerignore
 !/.gitignore
 !/docker-compose.yml
@@ -12,7 +13,6 @@
 !/email.html
 !/LICENSE
 !/README.md
-!/screenshot.png
 !/go.mod
 !/go.sum
 !*.go

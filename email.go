@@ -4,22 +4,15 @@ import (
 	"bytes"
 	_ "embed"
 	"fmt"
-	htmlTemplate "html/template"
+	"html/template"
 	"log"
 	"net/smtp"
+	"net/textproto"
 	"strings"
-	textTemplate "text/template"
 
 	"github.com/drone/drone-go/plugin/webhook"
+	"github.com/jordan-wright/email"
 )
-
-const headersTemplate = `Subject: {{.Subject}}
-From: {{.From}}
-To: {{.To}}
-Mime-Version: 1.0;
-Content-Type: text/html; charset=UTF-8;
-
-`
 
 //go:embed email.html
 var bodyTemplate string
@@ -30,8 +23,7 @@ type EmailSender struct {
 	username string
 	password string
 	from     string
-	headers  *textTemplate.Template
-	body     *htmlTemplate.Template
+	body     *template.Template
 }
 
 func NewEmailSender(settings Settings) *EmailSender {
@@ -41,15 +33,11 @@ func NewEmailSender(settings Settings) *EmailSender {
 		username: settings.EmailSmtpUsername,
 		password: settings.EmailSmtpPassword,
 		from:     settings.EmailFrom,
-		headers:  textTemplate.Must(textTemplate.New("headers").Parse(headersTemplate)),
-		body:     htmlTemplate.Must(htmlTemplate.New("body").Parse(bodyTemplate)),
+		body:     template.Must(template.New("body").Parse(bodyTemplate)),
 	}
 }
 
-func (s *EmailSender) Send(req *webhook.Request) {
-	addr := fmt.Sprintf("%s:%d", s.host, s.port)
-	auth := smtp.PlainAuth("", s.username, s.password, s.host)
-
+func (s *EmailSender) Send(req *webhook.Request) error {
 	var author string
 	if req.Build.AuthorName != "" {
 		author = req.Build.AuthorName
@@ -73,8 +61,8 @@ func (s *EmailSender) Send(req *webhook.Request) {
 		DroneServerLink string
 	}{
 		Subject:         fmt.Sprintf("[%s] Failed build for %s (%s)", req.Repo.Slug, req.Build.Ref, req.Build.After[:8]),
-		From:            fmt.Sprintf("\"%s\" <%s>", "Drone", s.from),
-		To:              fmt.Sprintf("\"%s\" <%s>", author, req.Build.AuthorEmail),
+		From:            fmt.Sprintf("%s <%s>", "Drone", s.from),
+		To:              fmt.Sprintf("%s <%s>", author, req.Build.AuthorEmail),
 		Header:          fmt.Sprintf("Build #%d has failed", req.Build.ID),
 		Repository:      req.Repo.Slug,
 		Reference:       req.Build.Ref,
@@ -87,20 +75,23 @@ func (s *EmailSender) Send(req *webhook.Request) {
 		DroneServerLink: req.System.Link,
 	}
 	var msg bytes.Buffer
-	err := s.headers.Execute(&msg, &data)
-	if err != nil {
-		log.Println("email: cannot execute headers template:", err)
-		return
-	}
-	err = s.body.Execute(&msg, &data)
+	err := s.body.Execute(&msg, &data)
 	if err != nil {
 		log.Println("email: cannot execute body template:", err)
-		return
+		return err
 	}
 
-	err = smtp.SendMail(addr, auth, s.from, []string{req.Build.AuthorEmail}, msg.Bytes())
+	err = (&(email.Email{
+		From:    data.From,
+		To:      []string{data.To},
+		Subject: data.Subject,
+		Text:    []byte(data.Header),
+		HTML:    msg.Bytes(),
+		Headers: textproto.MIMEHeader{},
+	})).Send(fmt.Sprintf("%s:%d", s.host, s.port), smtp.PlainAuth("", s.username, s.password, s.host))
 	if err != nil {
 		log.Println("email: cannot send mail:", err)
-		return
+		return err
 	}
+	return nil
 }

@@ -5,6 +5,7 @@ import (
 	_ "embed"
 	"fmt"
 	htmlTemplate "html/template"
+	"log"
 	"net/smtp"
 	"strings"
 	textTemplate "text/template"
@@ -45,8 +46,7 @@ func NewEmailSender(settings Settings) *EmailSender {
 	}
 }
 
-func (s *EmailSender) Send(req *webhook.Request) error {
-	// TODO: logging
+func (s *EmailSender) Send(req *webhook.Request) {
 	addr := fmt.Sprintf("%s:%d", s.host, s.port)
 	auth := smtp.PlainAuth("", s.username, s.password, s.host)
 
@@ -89,12 +89,18 @@ func (s *EmailSender) Send(req *webhook.Request) error {
 	var msg bytes.Buffer
 	err := s.headers.Execute(&msg, &data)
 	if err != nil {
-		return err
+		log.Println("email: cannot execute headers template:", err)
+		return
 	}
 	err = s.body.Execute(&msg, &data)
 	if err != nil {
-		return err
+		log.Println("email: cannot execute body template:", err)
+		return
 	}
 
-	return smtp.SendMail(addr, auth, s.from, []string{req.Build.AuthorEmail}, msg.Bytes())
+	err = smtp.SendMail(addr, auth, s.from, []string{req.Build.AuthorEmail}, msg.Bytes())
+	if err != nil {
+		log.Println("email: cannot send mail:", err)
+		return
+	}
 }

@@ -4,18 +4,22 @@ import (
 	"bytes"
 	_ "embed"
 	"fmt"
-	"html/template"
+	htmlTemplate "html/template"
 	"log"
 	"net/smtp"
 	"net/textproto"
 	"strings"
+	textTemplate "text/template"
 
 	"github.com/drone/drone-go/plugin/webhook"
 	"github.com/jordan-wright/email"
 )
 
 //go:embed email.html
-var bodyTemplate string
+var htmlTemplateStr string
+
+//go:embed email.txt
+var textTemplateStr string
 
 type EmailSender struct {
 	host     string
@@ -23,7 +27,8 @@ type EmailSender struct {
 	username string
 	password string
 	from     string
-	body     *template.Template
+	html     *htmlTemplate.Template
+	text     *textTemplate.Template
 }
 
 func NewEmailSender(settings Settings) *EmailSender {
@@ -33,7 +38,8 @@ func NewEmailSender(settings Settings) *EmailSender {
 		username: settings.EmailSmtpUsername,
 		password: settings.EmailSmtpPassword,
 		from:     settings.EmailFrom,
-		body:     template.Must(template.New("body").Parse(bodyTemplate)),
+		html:     htmlTemplate.Must(htmlTemplate.New("html").Parse(htmlTemplateStr)),
+		text:     textTemplate.Must(textTemplate.New("text").Parse(textTemplateStr)),
 	}
 }
 
@@ -74,10 +80,18 @@ func (s *EmailSender) Send(req *webhook.Request) error {
 		DroneServerHost: req.System.Host,
 		DroneServerLink: req.System.Link,
 	}
-	var msg bytes.Buffer
-	err := s.body.Execute(&msg, &data)
+
+	var html bytes.Buffer
+	err := s.html.Execute(&html, &data)
 	if err != nil {
-		log.Println("email: cannot execute body template:", err)
+		log.Println("email: cannot execute html template:", err)
+		return err
+	}
+
+	var text bytes.Buffer
+	err = s.text.Execute(&text, &data)
+	if err != nil {
+		log.Println("email: cannot execute text template:", err)
 		return err
 	}
 
@@ -85,8 +99,8 @@ func (s *EmailSender) Send(req *webhook.Request) error {
 		From:    data.From,
 		To:      []string{data.To},
 		Subject: data.Subject,
-		Text:    []byte(data.Header),
-		HTML:    msg.Bytes(),
+		HTML:    html.Bytes(),
+		Text:    text.Bytes(),
 		Headers: textproto.MIMEHeader{},
 	})).Send(fmt.Sprintf("%s:%d", s.host, s.port), smtp.PlainAuth("", s.username, s.password, s.host))
 	if err != nil {

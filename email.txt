@@ -1,0 +1,11 @@
+{{.Header}}
+
+Repository: {{.Repository}}
+Reference: {{.Reference}}
+Commit Hash: {{.CommitHash}}
+Commit Message: {{.CommitMessage}}
+Commit Author: {{.AuthorName}}
+
+View build: {{.DroneBuildLink}}
+
+You're receiving this email because of your account on {{.DroneServerLink}}

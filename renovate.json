@@ -2,8 +2,9 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     ":reviewer(yegor-usoltsev)",
-    "config:base",
+    "config:recommended",
     "group:all",
-    "schedule:weekends"
+    "schedule:weekends",
+    ":disableDependencyDashboard"
   ]
 }

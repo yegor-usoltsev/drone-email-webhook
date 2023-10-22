@@ -1,7 +1,7 @@
 ---
 services:
   traefik:
-    image: traefik:v2.10.1
+    image: traefik:2.10.5
     command: traefik --api.insecure=true --providers.docker=true --providers.docker.exposedByDefault=false
     ports:
       - 80:80
@@ -16,7 +16,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
 
   gitea:
-    image: gitea/gitea:1.19.3
+    image: gitea/gitea:1.20.5
     environment:
       GITEA__server__DISABLE_SSH: true
       GITEA__server__ROOT_URL: http://gitea.docker.test
@@ -28,7 +28,7 @@ services:
       traefik.http.services.gitea.loadbalancer.server.port: 3000
 
   drone:
-    image: drone/drone:2.17.0
+    image: drone/drone:2.20.0
     environment:
       DRONE_GITEA_CLIENT_ID: e775f224-b30a-4d3c-86c3-3311c8eb371e
       DRONE_GITEA_CLIENT_SECRET: gto_ugor3attlno7zuys24az4whvxewcutiau2dhejg63iyyv42ioy6a
@@ -55,7 +55,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
 
   maildev:
-    image: maildev/maildev:2.0.5
+    image: maildev/maildev:2.1.0
     environment:
       MAILDEV_SMTP_PORT: 1025
       MAILDEV_WEB_PORT: 1080

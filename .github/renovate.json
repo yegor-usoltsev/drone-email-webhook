@@ -4,9 +4,10 @@
     ":reviewer(yegor-usoltsev)",
     "config:recommended",
     "group:all",
-    "schedule:weekends",
+    "schedule:monthly",
     ":disableDependencyDashboard"
   ],
+  "postUpdateOptions": ["gomodTidy", "gomodUpdateImportPaths", "gomodMassage"],
   "customManagers": [
     {
       "customType": "regex",
@@ -15,12 +16,6 @@
       "matchStrings": ["go-version: \"(?<currentValue>.+?)\"\\s+# renovate"],
       "datasourceTemplate": "golang-version",
       "depNameTemplate": "go"
-    }
-  ],
-  "packageRules": [
-    {
-      "matchDatasources": ["golang-version"],
-      "rangeStrategy": "bump"
     }
   ]
 }

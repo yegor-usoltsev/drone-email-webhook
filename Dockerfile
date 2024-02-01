@@ -1,4 +1,4 @@
-FROM golang:1.21.5-alpine AS build
+FROM golang:1.21.6-alpine AS build
 WORKDIR /app
 COPY . .
 RUN go build -ldflags="-s -w"

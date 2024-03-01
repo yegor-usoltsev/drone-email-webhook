@@ -1,19 +1,18 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    ":reviewer(yegor-usoltsev)",
     "config:recommended",
     "group:all",
-    "schedule:monthly",
-    ":disableDependencyDashboard"
+    "schedule:weekends",
+    ":reviewer(yegor-usoltsev)"
   ],
   "postUpdateOptions": ["gomodTidy", "gomodUpdateImportPaths", "gomodMassage"],
   "customManagers": [
     {
       "customType": "regex",
       "description": "Update Go version",
-      "fileMatch": ["(^|/)\\.github/workflows/[^/]+\\.ya?ml$"],
-      "matchStrings": ["go-version: \"(?<currentValue>.+?)\"\\s+# renovate"],
+      "fileMatch": ["(^|/)go\\.mod$"],
+      "matchStrings": ["\\sgo (?<currentValue>.+?)\\s"],
       "datasourceTemplate": "golang-version",
       "depNameTemplate": "go"
     }

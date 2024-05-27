@@ -1,7 +1,7 @@
 ---
 services:
   traefik:
-    image: traefik:v3.0.0
+    image: traefik:v3.0.1
     command: traefik --api.insecure=true --providers.docker=true --providers.docker.exposedByDefault=false
     ports:
       - 80:80
@@ -16,7 +16,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
 
   gitea:
-    image: gitea/gitea:1.21.11
+    image: gitea/gitea:1.22.0
     environment:
       GITEA__server__DISABLE_SSH: true
       GITEA__server__ROOT_URL: http://gitea.docker.test

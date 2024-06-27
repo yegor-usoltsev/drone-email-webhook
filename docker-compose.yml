@@ -1,7 +1,7 @@
 ---
 services:
   traefik:
-    image: traefik:v3.0.1
+    image: traefik:v3.0.3
     command: traefik --api.insecure=true --providers.docker=true --providers.docker.exposedByDefault=false
     ports:
       - 80:80

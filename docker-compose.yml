@@ -16,7 +16,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
 
   gitea:
-    image: gitea/gitea:1.22.1
+    image: gitea/gitea:1.22.2
     environment:
       GITEA__server__DISABLE_SSH: true
       GITEA__server__ROOT_URL: http://gitea.docker.test

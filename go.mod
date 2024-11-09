@@ -1,6 +1,6 @@
 module github.com/yegor-usoltsev/drone-email-webhook
 
-go 1.23.2
+go 1.23.3
 
 require (
 	github.com/99designs/httpsignatures-go v0.0.0-20170731043157-88528bf4ca7e

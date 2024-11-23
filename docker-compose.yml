@@ -1,7 +1,7 @@
 ---
 services:
   traefik:
-    image: traefik:v3.2.0
+    image: traefik:v3.2.1
     command: traefik --api.insecure=true --providers.docker=true --providers.docker.exposedByDefault=false
     ports:
       - 80:80
@@ -28,7 +28,7 @@ services:
       traefik.http.services.gitea.loadbalancer.server.port: 3000
 
   drone:
-    image: drone/drone:2.24.0
+    image: drone/drone:2.25.0
     environment:
       DRONE_GITEA_CLIENT_ID: e775f224-b30a-4d3c-86c3-3311c8eb371e
       DRONE_GITEA_CLIENT_SECRET: gto_ugor3attlno7zuys24az4whvxewcutiau2dhejg63iyyv42ioy6a

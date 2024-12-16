@@ -1,7 +1,7 @@
 ---
 services:
   traefik:
-    image: traefik:v3.2.1
+    image: traefik:v3.2.3
     command: traefik --api.insecure=true --providers.docker=true --providers.docker.exposedByDefault=false
     ports:
       - 80:80
@@ -16,7 +16,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
 
   gitea:
-    image: gitea/gitea:1.22.4
+    image: gitea/gitea:1.22.6
     environment:
       GITEA__server__DISABLE_SSH: true
       GITEA__server__ROOT_URL: http://gitea.docker.test
@@ -55,7 +55,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
 
   maildev:
-    image: maildev/maildev:2.1.0
+    image: maildev/maildev:2.2.1
     environment:
       MAILDEV_SMTP_PORT: 1025
       MAILDEV_WEB_PORT: 1080

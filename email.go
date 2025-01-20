@@ -73,7 +73,7 @@ func (s *EmailSender) Send(req *webhook.Request) error {
 		Repository:      req.Repo.Slug,
 		Reference:       req.Build.Ref,
 		CommitHash:      req.Build.After[:8],
-		CommitMessage:   strings.TrimSpace(req.Build.Message),
+		CommitMessage:   strings.TrimSpace(strings.Split(req.Build.Message, "\n")[0]),
 		AuthorAvatar:    req.Build.AuthorAvatar,
 		AuthorName:      author,
 		DroneBuildLink:  fmt.Sprintf("%s/%s/%d", req.System.Link, req.Repo.Slug, req.Build.Number),

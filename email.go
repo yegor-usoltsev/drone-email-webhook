@@ -66,17 +66,17 @@ func (s *EmailSender) Send(req *webhook.Request) error {
 		DroneServerHost string
 		DroneServerLink string
 	}{
-		Subject:         fmt.Sprintf("[%s] Failed build for %s (%s)", req.Repo.Slug, req.Build.Ref, req.Build.After[:8]),
+		Subject:         fmt.Sprintf("[%s] Failed build #%d for %s (%s)", req.Repo.Slug, req.Build.Number, req.Build.Ref, req.Build.After[:8]),
 		From:            fmt.Sprintf("%s <%s>", "Drone", s.from),
 		To:              fmt.Sprintf("%s <%s>", author, req.Build.AuthorEmail),
-		Header:          fmt.Sprintf("Build #%d has failed", req.Build.ID),
+		Header:          fmt.Sprintf("Build #%d has failed", req.Build.Number),
 		Repository:      req.Repo.Slug,
 		Reference:       req.Build.Ref,
 		CommitHash:      req.Build.After[:8],
 		CommitMessage:   strings.TrimSpace(req.Build.Message),
 		AuthorAvatar:    req.Build.AuthorAvatar,
 		AuthorName:      author,
-		DroneBuildLink:  fmt.Sprintf("%s/%s/%d", req.System.Link, req.Repo.Slug, req.Build.ID),
+		DroneBuildLink:  fmt.Sprintf("%s/%s/%d", req.System.Link, req.Repo.Slug, req.Build.Number),
 		DroneServerHost: req.System.Host,
 		DroneServerLink: req.System.Link,
 	}

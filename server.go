@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"net"
@@ -14,7 +15,6 @@ import (
 const (
 	ReadTimeout       = 16 * time.Second
 	ReadHeaderTimeout = 5 * time.Second
-	HandlerTimeout    = 10 * time.Second
 	WriteTimeout      = 11 * time.Second
 	IdleTimeout       = 120 * time.Second
 	ShutdownTimeout   = 11 * time.Second
@@ -58,7 +58,7 @@ func (s *Server) ListenAndServe(handler http.Handler) {
 			return
 		}
 		log.Println("server: listening on", listener.Addr())
-		if err = srv.Serve(listener); err != nil && err != http.ErrServerClosed {
+		if err = srv.Serve(listener); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Println("server: unable to serve:", err)
 			s.cancelServerCtx()
 		}

@@ -191,7 +191,7 @@ func TestWebhookHandler_ServeHTTP(t *testing.T) {
 				if tt.name == "invalid_signature" {
 					secret = "wrong_secret"
 				}
-				signer.SignRequest(keyID, secret, req)
+				_ = signer.SignRequest(keyID, secret, req)
 			}
 
 			rr := httptest.NewRecorder()

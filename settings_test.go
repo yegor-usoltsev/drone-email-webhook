@@ -77,7 +77,7 @@ func TestNewSettingsFromEnv(t *testing.T) {
 			os.Clearenv()
 
 			for k, v := range tt.envVars {
-				os.Setenv(k, v)
+				_ = os.Setenv(k, v)
 			}
 
 			if tt.wantErr {

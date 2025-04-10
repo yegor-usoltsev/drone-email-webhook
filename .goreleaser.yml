@@ -1,0 +1,85 @@
+---
+version: 2
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - env:
+      - CGO_ENABLED=0
+    targets:
+      - go_first_class
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w
+
+changelog:
+  disable: true
+
+archives:
+  - format_overrides:
+      - goos: windows
+        format: zip
+
+checksum:
+  name_template: checksums.sha256.txt
+  algorithm: sha256
+
+report_sizes: true
+
+dockers:
+  - use: buildx
+    goarch: amd64
+    image_templates:
+      - "yusoltsev/drone-email-webhook:v{{ .Version }}-amd64"
+      - "ghcr.io/yegor-usoltsev/drone-email-webhook:v{{ .Version }}-amd64"
+    build_flag_templates:
+      - --pull
+      - --platform=linux/amd64
+  - use: buildx
+    goarch: arm64
+    image_templates:
+      - "yusoltsev/drone-email-webhook:v{{ .Version }}-arm64"
+      - "ghcr.io/yegor-usoltsev/drone-email-webhook:v{{ .Version }}-arm64"
+    build_flag_templates:
+      - --pull
+      - --platform=linux/arm64
+
+docker_manifests:
+  - name_template: "yusoltsev/drone-email-webhook:v{{ .Version }}"
+    image_templates:
+      - "yusoltsev/drone-email-webhook:v{{ .Version }}-amd64"
+      - "yusoltsev/drone-email-webhook:v{{ .Version }}-arm64"
+  - name_template: "ghcr.io/yegor-usoltsev/drone-email-webhook:v{{ .Version }}"
+    image_templates:
+      - "ghcr.io/yegor-usoltsev/drone-email-webhook:v{{ .Version }}-amd64"
+      - "ghcr.io/yegor-usoltsev/drone-email-webhook:v{{ .Version }}-arm64"
+  - name_template: "yusoltsev/drone-email-webhook:v{{ .Major }}.{{ .Minor }}"
+    image_templates:
+      - "yusoltsev/drone-email-webhook:v{{ .Version }}-amd64"
+      - "yusoltsev/drone-email-webhook:v{{ .Version }}-arm64"
+  - name_template: "ghcr.io/yegor-usoltsev/drone-email-webhook:v{{ .Major }}.{{ .Minor }}"
+    image_templates:
+      - "ghcr.io/yegor-usoltsev/drone-email-webhook:v{{ .Version }}-amd64"
+      - "ghcr.io/yegor-usoltsev/drone-email-webhook:v{{ .Version }}-arm64"
+  - name_template: "yusoltsev/drone-email-webhook:v{{ .Major }}"
+    image_templates:
+      - "yusoltsev/drone-email-webhook:v{{ .Version }}-amd64"
+      - "yusoltsev/drone-email-webhook:v{{ .Version }}-arm64"
+  - name_template: "ghcr.io/yegor-usoltsev/drone-email-webhook:v{{ .Major }}"
+    image_templates:
+      - "ghcr.io/yegor-usoltsev/drone-email-webhook:v{{ .Version }}-amd64"
+      - "ghcr.io/yegor-usoltsev/drone-email-webhook:v{{ .Version }}-arm64"
+  - name_template: "yusoltsev/drone-email-webhook:latest"
+    image_templates:
+      - "yusoltsev/drone-email-webhook:v{{ .Version }}-amd64"
+      - "yusoltsev/drone-email-webhook:v{{ .Version }}-arm64"
+  - name_template: "ghcr.io/yegor-usoltsev/drone-email-webhook:latest"
+    image_templates:
+      - "ghcr.io/yegor-usoltsev/drone-email-webhook:v{{ .Version }}-amd64"
+      - "ghcr.io/yegor-usoltsev/drone-email-webhook:v{{ .Version }}-arm64"
+
+release:
+  name_template: "v{{ .Version }}"

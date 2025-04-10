@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"syscall"
 	"time"
 )
 
@@ -36,7 +37,7 @@ func NewServer(settings Settings) *Server {
 
 func (s *Server) ListenAndServe(handler http.Handler) {
 	shutdownCh := make(chan os.Signal, 1)
-	signal.Notify(shutdownCh, os.Interrupt, os.Kill)
+	signal.Notify(shutdownCh, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		log.Println("server: received signal:", <-shutdownCh)
 		s.cancelServerCtx()

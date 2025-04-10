@@ -6,8 +6,8 @@
 <meta name="x-apple-disable-message-reformatting"/>
 <meta content="width=device-width,initial-scale=1" name="viewport"/>
 <meta content="telephone=no, date=no, address=no, email=no, url=no" name="format-detection"/>
-<meta content="light" name="color-scheme"/>
-<meta content="light" name="supported-color-schemes"/>
+<meta content="light dark" name="color-scheme"/>
+<meta content="light dark" name="supported-color-schemes"/>
 <!--[if mso]>
 <noscript>
 <xml>
@@ -19,11 +19,11 @@
 <style>a,div,h1,h2,h3,h4,h5,h6,p,td,th{font-family:"Segoe UI",sans-serif;mso-line-height-rule:exactly}</style>
 <![endif]-->
 <title>{{.Subject}}</title>
-<style>.hover-important-text-decoration-underline:hover{text-decoration:underline!important}@media (max-width:600px){.sm-my-8{margin-top:32px!important;margin-bottom:32px!important}.sm-px-4{padding-left:16px!important;padding-right:16px!important}}</style>
+<style>:root{color-scheme:light dark;--bg-color:#f8fafc;--text-color:#334155;--card-bg:#fff;--card-shadow:0 1px 2px 0 rgba(0,0,0,0.05);--link-color:#0369a1;--error-bg:#ef4444;--error-text:#f8fafc;--button-bg:#0284c7;--button-text:#f8fafc;--footer-text:#475569}@media (prefers-color-scheme:dark){:root{--bg-color:#0f172a;--text-color:#e2e8f0;--card-bg:#1e293b;--card-shadow:0 1px 2px 0 rgba(0,0,0,0.3);--link-color:#38bdf8;--error-bg:#dc2626;--error-text:#f8fafc;--button-bg:#0284c7;--button-text:#f8fafc;--footer-text:#94a3b8}}.hover-important-text-decoration-underline:hover{text-decoration:underline!important}@media (max-width:600px){.sm-my-8{margin-top:32px!important;margin-bottom:32px!important}.sm-px-4{padding-left:16px!important;padding-right:16px!important}}</style>
 </head>
-<body style="margin:0;width:100%;background-color:#f8fafc;padding:0;-webkit-font-smoothing:antialiased;word-break:break-word">
+<body style="margin:0;width:100%;background-color:var(--bg-color);padding:0;-webkit-font-smoothing:antialiased;word-break:break-word">
 <div aria-label="{{.Subject}}" aria-roledescription="email" lang="en" role="article">
-<div class="sm-px-4" style="background-color:#f8fafc;font-family:ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif">
+<div class="sm-px-4" style="background-color:var(--bg-color);font-family:ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif">
 <table align="center" cellpadding="0" cellspacing="0" role="presentation">
 <tr>
 <td style="width:552px;max-width:100%">
@@ -36,10 +36,10 @@
 </div>
 <table cellpadding="0" cellspacing="0" role="presentation" style="width:100%">
 <tr>
-<td style="border-radius:4px;background-color:#fff;padding:24px;font-size:16px;color:#334155;box-shadow:0 1px 2px 0 rgba(0,0,0,0.05)">
+<td style="border-radius:4px;background-color:var(--card-bg);padding:24px;font-size:16px;color:var(--text-color);box-shadow:var(--card-shadow)">
 <table cellpadding="0" cellspacing="0" role="presentation" style="margin-bottom:24px;width:100%">
 <tr>
-<td colspan="2" style="border-radius:4px;background-color:#ef4444;padding:12px 16px;text-align:center;font-size:16px;font-weight:600;line-height:1;color:#f8fafc">
+<td colspan="2" style="border-radius:4px;background-color:var(--error-bg);padding:12px 16px;text-align:center;font-size:16px;font-weight:600;line-height:1;color:var(--error-text)">
 {{.Header}}
 </td>
 </tr>
@@ -89,7 +89,7 @@ Commit Author
 </tr>
 </table>
 <div style="text-align:center">
-<a href="{{.DroneBuildLink}}" style="display:inline-block;border-radius:4px;background-color:#0284c7;padding:12px 16px;font-size:16px;font-weight:600;line-height:1;color:#f8fafc;text-decoration:none">
+<a href="{{.DroneBuildLink}}" style="display:inline-block;border-radius:4px;background-color:var(--button-bg);padding:12px 16px;font-size:16px;font-weight:600;line-height:1;color:var(--button-text);text-decoration:none">
 <!--[if mso]>
 <i style="mso-font-width:-100%;letter-spacing:32px;mso-text-raise:30px" hidden>&nbsp;</i>
 <![endif]-->
@@ -107,10 +107,10 @@ View build
 <td style="line-height:24px">&zwj;</td>
 </tr>
 <tr>
-<td style="padding-left:24px;padding-right:24px;text-align:center;font-size:12px;color:#475569">
+<td style="padding-left:24px;padding-right:24px;text-align:center;font-size:12px;color:var(--footer-text)">
 <p style="cursor:default">
 You're receiving this email because of your account on
-<a class="hover-important-text-decoration-underline" href="{{.DroneServerLink}}" style="color:#0369a1;text-decoration:none">{{.DroneServerHost}}</a>
+<a class="hover-important-text-decoration-underline" href="{{.DroneServerLink}}" style="color:var(--link-color);text-decoration:none">{{.DroneServerHost}}</a>
 </p>
 </td>
 </tr>

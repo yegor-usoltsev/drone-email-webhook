@@ -13,10 +13,10 @@ type Settings struct {
 	ServerHost        string `split_words:"true" required:"true" default:"0.0.0.0"`
 	ServerPort        int    `split_words:"true" required:"true" default:"3000"`
 	EmailSmtpHost     string `split_words:"true" required:"true" default:"localhost"`
-	EmailSmtpPort     int    `split_words:"true" required:"true" default:"1025"`
-	EmailSmtpUsername string `split_words:"true" required:"true" default:"maildev"`
-	EmailSmtpPassword string `split_words:"true" required:"true" default:"maildev"`
-	EmailFrom         string `split_words:"true" required:"true" default:"drone@example.com"`
+	EmailSmtpPort     int    `split_words:"true" required:"true" default:"25"`
+	EmailSmtpUsername string `split_words:"true" required:"true" default:"drone"`
+	EmailSmtpPassword string `split_words:"true" required:"true" default:"drone"`
+	EmailFrom         string `split_words:"true" required:"true" default:"drone@localhost"`
 }
 
 func NewSettingsFromEnv() Settings {

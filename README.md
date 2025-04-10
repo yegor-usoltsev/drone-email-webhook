@@ -41,16 +41,16 @@ Note: Make sure to replace the placeholder values with your actual configuration
 
 ### Environment Variables
 
-| KEY                         | TYPE      | DEFAULT             |
-|-----------------------------|-----------|---------------------|
-| `DRONE_SECRET`              | `String`  |                     |
-| `DRONE_SERVER_HOST`         | `String`  | `0.0.0.0`           |
-| `DRONE_SERVER_PORT`         | `Integer` | `3000`              |
-| `DRONE_EMAIL_SMTP_HOST`     | `String`  | `localhost`         |
-| `DRONE_EMAIL_SMTP_PORT`     | `Integer` | `1025`              |
-| `DRONE_EMAIL_SMTP_USERNAME` | `String`  | `maildev`           |
-| `DRONE_EMAIL_SMTP_PASSWORD` | `String`  | `maildev`           |
-| `DRONE_EMAIL_FROM`          | `String`  | `drone@example.com` |
+| KEY                         | TYPE      | DEFAULT           |
+|-----------------------------|-----------|-------------------|
+| `DRONE_SECRET`              | `String`  |                   |
+| `DRONE_SERVER_HOST`         | `String`  | `0.0.0.0`         |
+| `DRONE_SERVER_PORT`         | `Integer` | `3000`            |
+| `DRONE_EMAIL_SMTP_HOST`     | `String`  | `localhost`       |
+| `DRONE_EMAIL_SMTP_PORT`     | `Integer` | `25`              |
+| `DRONE_EMAIL_SMTP_USERNAME` | `String`  | `drone`           |
+| `DRONE_EMAIL_SMTP_PASSWORD` | `String`  | `drone`           |
+| `DRONE_EMAIL_FROM`          | `String`  | `drone@localhost` |
 
 ## Docker Images
 

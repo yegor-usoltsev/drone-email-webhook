@@ -12,7 +12,32 @@ Webhook listener for Drone CI / CD notifying commit authors of failed builds via
 
 ## Usage
 
-TODO
+### Starting the webhook listener
+
+Pull and run the container:
+
+```bash
+docker run -d \
+  -p 3000:3000 \
+  -e DRONE_SECRET=your_webhook_secret \
+  yusoltsev/drone-email-webhook:latest
+```
+
+See the [Environment Variables](#environment-variables) table below for all available configuration options.
+
+### Configuring Drone
+
+Configure your Drone server to send webhooks by setting the following environment variables:
+
+```yaml
+DRONE_WEBHOOK_ENDPOINT: http://your-webhook-host:3000
+DRONE_WEBHOOK_SECRET: your_webhook_secret # Must match DRONE_SECRET in webhook container
+```
+
+For more information about Drone webhooks configuration, please refer to
+the [official Drone documentation](https://docs.drone.io/webhooks/overview/).
+
+Note: Make sure to replace the placeholder values with your actual configuration values.
 
 ### Environment Variables
 

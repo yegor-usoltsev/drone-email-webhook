@@ -41,11 +41,11 @@ func (h *WebhookHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if req.Event == webhook.EventBuild && req.Action == webhook.ActionUpdated && req.Build.Status == "failure" {
 		log.Printf("webhook: processing event for build #%d in repo %s\n", req.Build.ID, req.Repo.Slug)
-		err = h.emailSender.Send(req)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+		go func() {
+			if err := h.emailSender.Send(req); err != nil {
+				log.Printf("webhook: failed to send email for build #%d: %v\n", req.Build.ID, err)
+			}
+		}()
 	}
 
 	w.WriteHeader(http.StatusNoContent)

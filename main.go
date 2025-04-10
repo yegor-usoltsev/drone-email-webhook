@@ -1,8 +1,7 @@
 package main
 
 import (
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
+	"net/http"
 )
 
 func main() {
@@ -11,11 +10,22 @@ func main() {
 	emailSender := NewEmailSender(settings)
 	webhookHandler := NewWebhookHandler(settings, emailSender)
 
-	router := chi.NewRouter()
-	router.Use(middleware.Recoverer)
-	router.Use(middleware.Timeout(HandlerTimeout))
-	router.Use(middleware.Heartbeat("/health"))
-	router.Post("/", webhookHandler.ServeHTTP)
+	mux := http.NewServeMux()
+	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+	mux.Handle("POST /", withRecovery(webhookHandler.ServeHTTP))
 
-	server.ListenAndServe(router)
+	server.ListenAndServe(mux)
+}
+
+func withRecovery(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		defer func() {
+			if err := recover(); err != nil {
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			}
+		}()
+		next.ServeHTTP(w, r)
+	}
 }

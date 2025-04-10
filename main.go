@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"net/http"
 )
 
@@ -23,6 +24,7 @@ func withRecovery(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			if err := recover(); err != nil {
+				log.Printf("server: panic recovered: %v\n", err)
 				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			}
 		}()

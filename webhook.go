@@ -11,10 +11,14 @@ import (
 
 type WebhookHandler struct {
 	secret      string
-	emailSender *EmailSender
+	emailSender EmailSenderInterface
 }
 
-func NewWebhookHandler(settings Settings, emailSender *EmailSender) *WebhookHandler {
+type EmailSenderInterface interface {
+	Send(req *webhook.Request) error
+}
+
+func NewWebhookHandler(settings Settings, emailSender EmailSenderInterface) *WebhookHandler {
 	return &WebhookHandler{secret: settings.Secret, emailSender: emailSender}
 }
 
@@ -31,18 +35,18 @@ func (h *WebhookHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	req := &webhook.Request{}
+	var req webhook.Request
 	err = json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
-		log.Println("webhook: cannot unmarshal request body")
+		log.Println("webhook: cannot unmarshal request body:", err)
 		http.Error(w, "Invalid Input", http.StatusBadRequest)
 		return
 	}
 
-	if req.Event == webhook.EventBuild && req.Action == webhook.ActionUpdated && req.Build.Status == "failure" {
+	if req.Event == webhook.EventBuild && req.Action == webhook.ActionUpdated && req.Build != nil && req.Build.Status == "failure" {
 		log.Printf("webhook: processing event for build #%d in repo %s\n", req.Build.ID, req.Repo.Slug)
 		go func() {
-			if err := h.emailSender.Send(req); err != nil {
+			if err := h.emailSender.Send(&req); err != nil {
 				log.Printf("webhook: failed to send email for build #%d: %v\n", req.Build.ID, err)
 			}
 		}()

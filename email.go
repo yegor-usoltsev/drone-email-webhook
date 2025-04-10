@@ -95,14 +95,21 @@ func (s *EmailSender) Send(req *webhook.Request) error {
 		return err
 	}
 
-	err = (&(email.Email{
+	emailMsg := &email.Email{
 		From:    data.From,
 		To:      []string{data.To},
 		Subject: data.Subject,
 		HTML:    html.Bytes(),
 		Text:    text.Bytes(),
 		Headers: textproto.MIMEHeader{},
-	})).Send(fmt.Sprintf("%s:%d", s.host, s.port), smtp.PlainAuth("", s.username, s.password, s.host))
+	}
+
+	var auth smtp.Auth
+	if s.username != "" && s.password != "" {
+		auth = smtp.PlainAuth("", s.username, s.password, s.host)
+	}
+
+	err = emailMsg.Send(fmt.Sprintf("%s:%d", s.host, s.port), auth)
 	if err != nil {
 		log.Println("email: cannot send mail:", err)
 		return err

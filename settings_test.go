@@ -39,9 +39,25 @@ func TestNewSettingsFromEnv(t *testing.T) {
 			},
 		},
 		{
-			name: "use_defaults",
+			name: "use_defaults_without_auth",
 			envVars: map[string]string{
 				"DRONE_SECRET": "test-secret",
+			},
+			wantErr: false,
+			expected: Settings{
+				Secret:        "test-secret",
+				ServerHost:    "0.0.0.0",
+				ServerPort:    3000,
+				EmailSmtpHost: "localhost",
+				EmailSmtpPort: 25,
+				EmailFrom:     "drone@localhost",
+			},
+		},
+		{
+			name: "with_auth_but_no_password",
+			envVars: map[string]string{
+				"DRONE_SECRET":              "test-secret",
+				"DRONE_EMAIL_SMTP_USERNAME": "test-user",
 			},
 			wantErr: false,
 			expected: Settings{
@@ -50,8 +66,7 @@ func TestNewSettingsFromEnv(t *testing.T) {
 				ServerPort:        3000,
 				EmailSmtpHost:     "localhost",
 				EmailSmtpPort:     25,
-				EmailSmtpUsername: "drone",
-				EmailSmtpPassword: "drone",
+				EmailSmtpUsername: "test-user",
 				EmailFrom:         "drone@localhost",
 			},
 		},

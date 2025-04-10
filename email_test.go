@@ -43,19 +43,23 @@ func TestEmailSender_Send(t *testing.T) {
 	host, port, cleanup := setupMailHog(t)
 	defer cleanup()
 
-	sender := NewEmailSender(Settings{
-		EmailSmtpHost: host,
-		EmailSmtpPort: port,
-		EmailFrom:     "test@example.com",
-	})
-
 	tests := []struct {
-		name    string
-		req     *webhook.Request
-		wantErr bool
+		name     string
+		settings Settings
+		req      *webhook.Request
+		wantErr  bool
+		useAuth  bool
 	}{
 		{
-			name: "successful_email_with_author_name",
+			name: "successful_email_with_auth",
+			settings: Settings{
+				EmailSmtpHost:     host,
+				EmailSmtpPort:     port,
+				EmailFrom:         "test@example.com",
+				EmailSmtpUsername: "test-user",
+				EmailSmtpPassword: "test-pass",
+			},
+			useAuth: true,
 			req: &webhook.Request{
 				Build: &drone.Build{
 					Number:      1,
@@ -77,7 +81,13 @@ func TestEmailSender_Send(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "successful_email_without_author_name",
+			name: "successful_email_without_auth",
+			settings: Settings{
+				EmailSmtpHost: host,
+				EmailSmtpPort: port,
+				EmailFrom:     "test@example.com",
+			},
+			useAuth: false,
 			req: &webhook.Request{
 				Build: &drone.Build{
 					Number:      2,
@@ -99,6 +109,12 @@ func TestEmailSender_Send(t *testing.T) {
 		},
 		{
 			name: "empty_commit_message",
+			settings: Settings{
+				EmailSmtpHost: host,
+				EmailSmtpPort: port,
+				EmailFrom:     "test@example.com",
+			},
+			useAuth: false,
 			req: &webhook.Request{
 				Build: &drone.Build{
 					Number:      3,
@@ -120,6 +136,12 @@ func TestEmailSender_Send(t *testing.T) {
 		},
 		{
 			name: "very_long_commit_message",
+			settings: Settings{
+				EmailSmtpHost: host,
+				EmailSmtpPort: port,
+				EmailFrom:     "test@example.com",
+			},
+			useAuth: false,
 			req: &webhook.Request{
 				Build: &drone.Build{
 					Number:      4,
@@ -141,6 +163,12 @@ func TestEmailSender_Send(t *testing.T) {
 		},
 		{
 			name: "missing_author_email",
+			settings: Settings{
+				EmailSmtpHost: host,
+				EmailSmtpPort: port,
+				EmailFrom:     "test@example.com",
+			},
+			useAuth: false,
 			req: &webhook.Request{
 				Build: &drone.Build{
 					Number:  5,
@@ -163,13 +191,13 @@ func TestEmailSender_Send(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			sender := NewEmailSender(tt.settings)
 			err := sender.Send(tt.req)
 			if tt.wantErr {
 				assert.Error(t, err)
 			} else {
 				assert.NoError(t, err)
 			}
-
 		})
 	}
 }

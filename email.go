@@ -6,8 +6,10 @@ import (
 	"fmt"
 	htmlTemplate "html/template"
 	"log"
+	"net"
 	"net/smtp"
 	"net/textproto"
+	"strconv"
 	"strings"
 	textTemplate "text/template"
 
@@ -23,7 +25,7 @@ var textTemplateStr string
 
 type EmailSender struct {
 	host     string
-	port     int
+	addr     string
 	username string
 	password string
 	from     string
@@ -34,7 +36,7 @@ type EmailSender struct {
 func NewEmailSender(settings Settings) *EmailSender {
 	return &EmailSender{
 		host:     settings.EmailSMTPHost,
-		port:     settings.EmailSMTPPort,
+		addr:     net.JoinHostPort(settings.EmailSMTPHost, strconv.Itoa(settings.EmailSMTPPort)),
 		username: settings.EmailSMTPUsername,
 		password: settings.EmailSMTPPassword,
 		from:     settings.EmailFrom,
@@ -111,7 +113,7 @@ func (s *EmailSender) Send(req *webhook.Request) error {
 		auth = smtp.PlainAuth("", s.username, s.password, s.host)
 	}
 
-	if err := emailMsg.Send(fmt.Sprintf("%s:%d", s.host, s.port), auth); err != nil {
+	if err := emailMsg.Send(s.addr, auth); err != nil {
 		log.Printf("[ERROR] email: cannot send mail for build #%d to %s: %v", req.Build.Number, data.To, err)
 		return fmt.Errorf("failed to send email: %w", err)
 	}

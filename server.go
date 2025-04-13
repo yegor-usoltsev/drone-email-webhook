@@ -3,12 +3,12 @@ package main
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log"
 	"net"
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 )
@@ -30,7 +30,7 @@ type Server struct {
 }
 
 func NewServer(settings Settings) *Server {
-	addr := fmt.Sprintf("%s:%d", settings.ServerHost, settings.ServerPort)
+	addr := net.JoinHostPort(settings.ServerHost, strconv.Itoa(settings.ServerPort))
 	serverCtx, cancelServerCtx := context.WithCancel(context.Background())
 	return &Server{addr: addr, serverCtx: serverCtx, cancelServerCtx: cancelServerCtx}
 }

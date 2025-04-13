@@ -25,7 +25,7 @@ const (
 
 type Server struct {
 	addr            string
-	serverCtx       context.Context
+	serverCtx       context.Context //nolint:containedctx
 	cancelServerCtx func()
 }
 
@@ -39,10 +39,12 @@ func (s *Server) ListenAndServe(handler http.Handler) {
 	shutdownCh := make(chan os.Signal, 1)
 	signal.Notify(shutdownCh, os.Interrupt, syscall.SIGTERM)
 	go func() {
-		log.Println("server: received signal:", <-shutdownCh)
+		sig := <-shutdownCh
+		log.Printf("[INFO] server: received signal: %v, initiating shutdown", sig)
 		s.cancelServerCtx()
 	}()
 
+	//nolint:exhaustruct
 	srv := &http.Server{
 		ReadTimeout:       ReadTimeout,
 		ReadHeaderTimeout: ReadHeaderTimeout,
@@ -54,23 +56,24 @@ func (s *Server) ListenAndServe(handler http.Handler) {
 	go func() {
 		listener, err := net.Listen("tcp", s.addr)
 		if err != nil {
-			log.Println("server: unable to listen:", err)
+			log.Printf("[ERROR] server: unable to listen on %s: %v", s.addr, err)
 			s.cancelServerCtx()
 			return
 		}
-		log.Println("server: listening on", listener.Addr())
+		log.Printf("[INFO] server: listening on %v", listener.Addr())
 		if err = srv.Serve(listener); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			log.Println("server: unable to serve:", err)
+			log.Printf("[ERROR] server: unable to serve: %v", err)
 			s.cancelServerCtx()
 		}
 	}()
 
 	<-s.serverCtx.Done()
-	log.Println("server: shutting down")
+	log.Printf("[INFO] server: shutting down")
 	shutdownCtx, cancelShutdownCtx := context.WithTimeout(context.Background(), ShutdownTimeout)
-	defer cancelShutdownCtx()
 	if err := srv.Shutdown(shutdownCtx); err != nil {
-		log.Fatalln("server: failed to shut down properly:", err)
+		cancelShutdownCtx()
+		log.Fatalf("[FATAL] server: failed to shut down properly: %v", err)
 	}
-	log.Println("server: shut down properly")
+	cancelShutdownCtx()
+	log.Printf("[INFO] server: shut down properly")
 }

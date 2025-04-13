@@ -33,10 +33,10 @@ type EmailSender struct {
 
 func NewEmailSender(settings Settings) *EmailSender {
 	return &EmailSender{
-		host:     settings.EmailSmtpHost,
-		port:     settings.EmailSmtpPort,
-		username: settings.EmailSmtpUsername,
-		password: settings.EmailSmtpPassword,
+		host:     settings.EmailSMTPHost,
+		port:     settings.EmailSMTPPort,
+		username: settings.EmailSMTPUsername,
+		password: settings.EmailSMTPPassword,
 		from:     settings.EmailFrom,
 		html:     htmlTemplate.Must(htmlTemplate.New("html").Parse(htmlTemplateStr)),
 		text:     textTemplate.Must(textTemplate.New("text").Parse(textTemplateStr)),
@@ -44,11 +44,14 @@ func NewEmailSender(settings Settings) *EmailSender {
 }
 
 func (s *EmailSender) Send(req *webhook.Request) error {
-	var author string
-	if req.Build.AuthorName != "" {
-		author = req.Build.AuthorName
-	} else {
+	author := req.Build.AuthorName
+	if author == "" {
 		author = req.Build.Author
+	}
+
+	commitHash := req.Build.After
+	if len(commitHash) > 8 {
+		commitHash = commitHash[:8]
 	}
 
 	data := struct {
@@ -66,13 +69,13 @@ func (s *EmailSender) Send(req *webhook.Request) error {
 		DroneServerHost string
 		DroneServerLink string
 	}{
-		Subject:         fmt.Sprintf("[%s] Failed build #%d for %s (%s)", req.Repo.Slug, req.Build.Number, req.Build.Ref, req.Build.After[:8]),
+		Subject:         fmt.Sprintf("[%s] Failed build #%d for %s (%s)", req.Repo.Slug, req.Build.Number, req.Build.Ref, commitHash),
 		From:            fmt.Sprintf("%s <%s>", "Drone", s.from),
 		To:              fmt.Sprintf("%s <%s>", author, req.Build.AuthorEmail),
 		Header:          fmt.Sprintf("Build #%d has failed", req.Build.Number),
 		Repository:      req.Repo.Slug,
 		Reference:       req.Build.Ref,
-		CommitHash:      req.Build.After[:8],
+		CommitHash:      commitHash,
 		CommitMessage:   strings.TrimSpace(strings.Split(req.Build.Message, "\n")[0]),
 		AuthorAvatar:    req.Build.AuthorAvatar,
 		AuthorName:      author,
@@ -82,19 +85,18 @@ func (s *EmailSender) Send(req *webhook.Request) error {
 	}
 
 	var html bytes.Buffer
-	err := s.html.Execute(&html, &data)
-	if err != nil {
-		log.Println("email: cannot execute html template:", err)
-		return err
+	if err := s.html.Execute(&html, &data); err != nil {
+		log.Printf("[ERROR] email: cannot execute HTML template for build #%d: %v", req.Build.Number, err)
+		return fmt.Errorf("failed to execute HTML template: %w", err)
 	}
 
 	var text bytes.Buffer
-	err = s.text.Execute(&text, &data)
-	if err != nil {
-		log.Println("email: cannot execute text template:", err)
-		return err
+	if err := s.text.Execute(&text, &data); err != nil {
+		log.Printf("[ERROR] email: cannot execute text template for build #%d: %v", req.Build.Number, err)
+		return fmt.Errorf("failed to execute text template: %w", err)
 	}
 
+	//nolint:exhaustruct
 	emailMsg := &email.Email{
 		From:    data.From,
 		To:      []string{data.To},
@@ -109,10 +111,10 @@ func (s *EmailSender) Send(req *webhook.Request) error {
 		auth = smtp.PlainAuth("", s.username, s.password, s.host)
 	}
 
-	err = emailMsg.Send(fmt.Sprintf("%s:%d", s.host, s.port), auth)
-	if err != nil {
-		log.Println("email: cannot send mail:", err)
-		return err
+	if err := emailMsg.Send(fmt.Sprintf("%s:%d", s.host, s.port), auth); err != nil {
+		log.Printf("[ERROR] email: cannot send mail for build #%d to %s: %v", req.Build.Number, data.To, err)
+		return fmt.Errorf("failed to send email: %w", err)
 	}
+	log.Printf("[INFO] email: successfully sent notification for build #%d to %s", req.Build.Number, data.To)
 	return nil
 }

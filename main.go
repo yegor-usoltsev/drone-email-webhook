@@ -12,7 +12,7 @@ func main() {
 	webhookHandler := NewWebhookHandler(settings, emailSender)
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("GET /health", func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	})
 	mux.Handle("POST /", withRecovery(webhookHandler.ServeHTTP))
@@ -24,7 +24,7 @@ func withRecovery(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			if err := recover(); err != nil {
-				log.Printf("server: panic recovered: %v\n", err)
+				log.Printf("[ERROR] server: panic recovered: %v, path: %s, method: %s", err, r.URL.Path, r.Method)
 				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			}
 		}()

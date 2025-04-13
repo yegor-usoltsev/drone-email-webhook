@@ -29,7 +29,12 @@ func (m *MockEmailSender) Send(req *webhook.Request) error {
 	return args.Error(0)
 }
 
+var (
+	errEmailSendingFailed = errors.New("email sending failed")
+)
+
 func TestWebhookHandler_ServeHTTP(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name           string
 		secret         string
@@ -161,12 +166,13 @@ func TestWebhookHandler_ServeHTTP(t *testing.T) {
 			signRequest:    true,
 			expectedStatus: http.StatusNoContent,
 			emailSent:      true,
-			emailError:     errors.New("email sending failed"),
+			emailError:     errEmailSendingFailed,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			mockEmailSender := NewMockEmailSender()
 			if tt.emailSent {
 				mockEmailSender.On("Send", tt.request).Return(tt.emailError)

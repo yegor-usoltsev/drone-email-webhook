@@ -1,7 +1,7 @@
 package main
 
 import (
-	"context"
+	"net"
 	"strings"
 	"testing"
 
@@ -14,7 +14,8 @@ import (
 )
 
 func setupMailHog(t *testing.T) (string, int, func()) {
-	ctx := context.Background()
+	t.Helper()
+	ctx := t.Context()
 
 	req := testcontainers.ContainerRequest{
 		Image:        "mailhog/mailhog:latest",
@@ -39,9 +40,18 @@ func setupMailHog(t *testing.T) (string, int, func()) {
 	}
 }
 
+func getFreePort(t *testing.T) int {
+	t.Helper()
+	listener, err := net.Listen("tcp", "localhost:0")
+	require.NoError(t, err)
+	defer listener.Close()
+	return listener.Addr().(*net.TCPAddr).Port
+}
+
 func TestEmailSender_Send(t *testing.T) {
+	t.Parallel()
 	host, port, cleanup := setupMailHog(t)
-	defer cleanup()
+	t.Cleanup(cleanup)
 
 	tests := []struct {
 		name     string
@@ -53,11 +63,11 @@ func TestEmailSender_Send(t *testing.T) {
 		{
 			name: "successful_email_with_auth",
 			settings: Settings{
-				EmailSmtpHost:     host,
-				EmailSmtpPort:     port,
+				EmailSMTPHost:     host,
+				EmailSMTPPort:     port,
 				EmailFrom:         "test@example.com",
-				EmailSmtpUsername: "test-user",
-				EmailSmtpPassword: "test-pass",
+				EmailSMTPUsername: "test-user",
+				EmailSMTPPassword: "test-pass",
 			},
 			useAuth: true,
 			req: &webhook.Request{
@@ -83,8 +93,8 @@ func TestEmailSender_Send(t *testing.T) {
 		{
 			name: "successful_email_without_auth",
 			settings: Settings{
-				EmailSmtpHost: host,
-				EmailSmtpPort: port,
+				EmailSMTPHost: host,
+				EmailSMTPPort: port,
 				EmailFrom:     "test@example.com",
 			},
 			useAuth: false,
@@ -110,8 +120,8 @@ func TestEmailSender_Send(t *testing.T) {
 		{
 			name: "empty_commit_message",
 			settings: Settings{
-				EmailSmtpHost: host,
-				EmailSmtpPort: port,
+				EmailSMTPHost: host,
+				EmailSMTPPort: port,
 				EmailFrom:     "test@example.com",
 			},
 			useAuth: false,
@@ -137,8 +147,8 @@ func TestEmailSender_Send(t *testing.T) {
 		{
 			name: "very_long_commit_message",
 			settings: Settings{
-				EmailSmtpHost: host,
-				EmailSmtpPort: port,
+				EmailSMTPHost: host,
+				EmailSMTPPort: port,
 				EmailFrom:     "test@example.com",
 			},
 			useAuth: false,
@@ -164,8 +174,8 @@ func TestEmailSender_Send(t *testing.T) {
 		{
 			name: "missing_author_email",
 			settings: Settings{
-				EmailSmtpHost: host,
-				EmailSmtpPort: port,
+				EmailSMTPHost: host,
+				EmailSMTPPort: port,
 				EmailFrom:     "test@example.com",
 			},
 			useAuth: false,
@@ -187,10 +197,66 @@ func TestEmailSender_Send(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		{
+			name: "short_commit_hash",
+			settings: Settings{
+				EmailSMTPHost: host,
+				EmailSMTPPort: port,
+				EmailFrom:     "test@example.com",
+			},
+			useAuth: false,
+			req: &webhook.Request{
+				Build: &drone.Build{
+					Number:      6,
+					Author:      "test",
+					AuthorEmail: "test@example.com",
+					Message:     "Test commit",
+					After:       "abc",
+					Ref:         "refs/heads/main",
+				},
+				Repo: &drone.Repo{
+					Slug: "test/repo",
+				},
+				System: &drone.System{
+					Host: "drone.example.com",
+					Link: "https://drone.example.com",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "with_author_avatar",
+			settings: Settings{
+				EmailSMTPHost: host,
+				EmailSMTPPort: port,
+				EmailFrom:     "test@example.com",
+			},
+			useAuth: false,
+			req: &webhook.Request{
+				Build: &drone.Build{
+					Number:       7,
+					Author:       "test",
+					AuthorEmail:  "test@example.com",
+					AuthorAvatar: "https://example.com/avatar.jpg",
+					Message:      "Test commit",
+					After:        "abcdef1234567890",
+					Ref:          "refs/heads/main",
+				},
+				Repo: &drone.Repo{
+					Slug: "test/repo",
+				},
+				System: &drone.System{
+					Host: "drone.example.com",
+					Link: "https://drone.example.com",
+				},
+			},
+			wantErr: false,
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			sender := NewEmailSender(tt.settings)
 			err := sender.Send(tt.req)
 			if tt.wantErr {
@@ -203,12 +269,13 @@ func TestEmailSender_Send(t *testing.T) {
 }
 
 func TestEmailSender_TemplateExecution(t *testing.T) {
+	t.Parallel()
 	host, port, cleanup := setupMailHog(t)
-	defer cleanup()
+	t.Cleanup(cleanup)
 
 	s := NewEmailSender(Settings{
-		EmailSmtpHost: host,
-		EmailSmtpPort: port,
+		EmailSMTPHost: host,
+		EmailSMTPPort: port,
 		EmailFrom:     "test@example.com",
 	})
 
@@ -217,9 +284,10 @@ func TestEmailSender_TemplateExecution(t *testing.T) {
 }
 
 func TestEmailSender_InvalidSMTP(t *testing.T) {
+	t.Parallel()
 	sender := NewEmailSender(Settings{
-		EmailSmtpHost: "nonexistent.example.com",
-		EmailSmtpPort: 1025,
+		EmailSMTPHost: "localhost",
+		EmailSMTPPort: getFreePort(t),
 		EmailFrom:     "test@example.com",
 	})
 

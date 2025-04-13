@@ -1,7 +1,6 @@
 package main
 
 import (
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -31,10 +30,10 @@ func TestNewSettingsFromEnv(t *testing.T) {
 				Secret:            "test-secret",
 				ServerHost:        "0.0.0.0",
 				ServerPort:        3000,
-				EmailSmtpHost:     "smtp.example.com",
-				EmailSmtpPort:     587,
-				EmailSmtpUsername: "test-user",
-				EmailSmtpPassword: "test-pass",
+				EmailSMTPHost:     "smtp.example.com",
+				EmailSMTPPort:     587,
+				EmailSMTPUsername: "test-user",
+				EmailSMTPPassword: "test-pass",
 				EmailFrom:         "drone@example.com",
 			},
 		},
@@ -48,8 +47,8 @@ func TestNewSettingsFromEnv(t *testing.T) {
 				Secret:        "test-secret",
 				ServerHost:    "0.0.0.0",
 				ServerPort:    3000,
-				EmailSmtpHost: "localhost",
-				EmailSmtpPort: 25,
+				EmailSMTPHost: "localhost",
+				EmailSMTPPort: 25,
 				EmailFrom:     "drone@localhost",
 			},
 		},
@@ -64,9 +63,9 @@ func TestNewSettingsFromEnv(t *testing.T) {
 				Secret:            "test-secret",
 				ServerHost:        "0.0.0.0",
 				ServerPort:        3000,
-				EmailSmtpHost:     "localhost",
-				EmailSmtpPort:     25,
-				EmailSmtpUsername: "test-user",
+				EmailSMTPHost:     "localhost",
+				EmailSMTPPort:     25,
+				EmailSMTPUsername: "test-user",
 				EmailFrom:         "drone@localhost",
 			},
 		},
@@ -74,10 +73,8 @@ func TestNewSettingsFromEnv(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			os.Clearenv()
-
 			for k, v := range tt.envVars {
-				_ = os.Setenv(k, v)
+				t.Setenv(k, v)
 			}
 
 			if tt.wantErr {

@@ -1,10 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 	"time"
 
@@ -110,14 +110,6 @@ func TestServer_ListenAndServe(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "invalid_port",
-			settings: Settings{
-				ServerHost: "localhost",
-				ServerPort: -1,
-			},
-			wantErr: true,
-		},
-		{
 			name: "invalid_host",
 			settings: Settings{
 				ServerHost: "invalid-host",
@@ -145,7 +137,7 @@ func TestServer_ListenAndServe(t *testing.T) {
 				require.NoError(t, err)
 				defer listener.Close()
 				addr := listener.Addr().(*net.TCPAddr)
-				tt.settings.ServerPort = addr.Port
+				tt.settings.ServerPort = uint16(addr.Port)
 			}
 			handler := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 				w.WriteHeader(http.StatusOK)
@@ -155,7 +147,7 @@ func TestServer_ListenAndServe(t *testing.T) {
 			}()
 			time.Sleep(100 * time.Millisecond)
 			if !tt.wantErr {
-				conn, err := net.Dial("tcp", fmt.Sprintf("localhost:%d", tt.settings.ServerPort))
+				conn, err := net.Dial("tcp", net.JoinHostPort("localhost", strconv.Itoa(int(tt.settings.ServerPort))))
 				if err == nil {
 					conn.Close()
 				}

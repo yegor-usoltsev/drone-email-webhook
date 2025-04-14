@@ -11,9 +11,9 @@ const envPrefix = "DRONE"
 type Settings struct {
 	Secret            string `split_words:"true" required:"true"`
 	ServerHost        string `split_words:"true" required:"true" default:"0.0.0.0"`
-	ServerPort        int    `split_words:"true" required:"true" default:"3000"`
+	ServerPort        uint16 `split_words:"true" required:"true" default:"3000"`
 	EmailSMTPHost     string `split_words:"true" required:"true" default:"localhost"`
-	EmailSMTPPort     int    `split_words:"true" required:"true" default:"25"`
+	EmailSMTPPort     uint16 `split_words:"true" required:"true" default:"25"`
 	EmailSMTPUsername string `split_words:"true"`
 	EmailSMTPPassword string `split_words:"true"`
 	EmailFrom         string `split_words:"true" required:"true" default:"drone@localhost"`

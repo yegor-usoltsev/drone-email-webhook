@@ -30,7 +30,7 @@ type Server struct {
 }
 
 func NewServer(settings Settings) *Server {
-	addr := net.JoinHostPort(settings.ServerHost, strconv.Itoa(settings.ServerPort))
+	addr := net.JoinHostPort(settings.ServerHost, strconv.Itoa(int(settings.ServerPort)))
 	serverCtx, cancelServerCtx := context.WithCancel(context.Background())
 	return &Server{addr: addr, serverCtx: serverCtx, cancelServerCtx: cancelServerCtx}
 }

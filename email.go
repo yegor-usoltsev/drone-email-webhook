@@ -36,7 +36,7 @@ type EmailSender struct {
 func NewEmailSender(settings Settings) *EmailSender {
 	return &EmailSender{
 		host:     settings.EmailSMTPHost,
-		addr:     net.JoinHostPort(settings.EmailSMTPHost, strconv.Itoa(settings.EmailSMTPPort)),
+		addr:     net.JoinHostPort(settings.EmailSMTPHost, strconv.Itoa(int(settings.EmailSMTPPort))),
 		username: settings.EmailSMTPUsername,
 		password: settings.EmailSMTPPassword,
 		from:     settings.EmailFrom,

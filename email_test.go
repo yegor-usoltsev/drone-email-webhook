@@ -13,7 +13,7 @@ import (
 	"github.com/testcontainers/testcontainers-go/wait"
 )
 
-func setupMailHog(t *testing.T) (string, int, func()) {
+func setupMailHog(t *testing.T) (string, uint16, func()) {
 	t.Helper()
 	ctx := t.Context()
 
@@ -35,17 +35,17 @@ func setupMailHog(t *testing.T) (string, int, func()) {
 	smtpPort, err := container.MappedPort(ctx, "1025/tcp")
 	require.NoError(t, err)
 
-	return host, smtpPort.Int(), func() {
+	return host, uint16(smtpPort.Int()), func() {
 		_ = container.Terminate(ctx)
 	}
 }
 
-func getFreePort(t *testing.T) int {
+func getFreePort(t *testing.T) uint16 {
 	t.Helper()
 	listener, err := net.Listen("tcp", "localhost:0")
 	require.NoError(t, err)
 	defer listener.Close()
-	return listener.Addr().(*net.TCPAddr).Port
+	return uint16(listener.Addr().(*net.TCPAddr).Port)
 }
 
 func TestEmailSender_Send(t *testing.T) {

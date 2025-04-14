@@ -69,7 +69,9 @@ func (s *Server) ListenAndServe(handler http.Handler) {
 
 	<-s.serverCtx.Done()
 	slog.Info("http server initiating shutdown")
-	if err := srv.Shutdown(context.Background()); err != nil {
+	shutdownCtx, cancelShutdownCtx := context.WithTimeout(context.Background(), ShutdownTimeout)
+	defer cancelShutdownCtx()
+	if err := srv.Shutdown(shutdownCtx); err != nil {
 		panic(err)
 	}
 	slog.Info("http server completed shutdown")

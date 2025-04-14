@@ -5,7 +5,7 @@ import (
 	_ "embed"
 	"fmt"
 	htmlTemplate "html/template"
-	"log"
+	"log/slog"
 	"net"
 	"net/smtp"
 	"net/textproto"
@@ -88,14 +88,14 @@ func (s *EmailSender) Send(req *webhook.Request) error {
 
 	var html bytes.Buffer
 	if err := s.html.Execute(&html, &data); err != nil {
-		log.Printf("[ERROR] email: cannot execute HTML template for build #%d: %v", req.Build.Number, err)
-		return fmt.Errorf("failed to execute HTML template: %w", err)
+		slog.Error("email sender cannot execute HTML template", "build_number", req.Build.Number, "error", err)
+		return fmt.Errorf("email sender cannot execute HTML template: %w", err)
 	}
 
 	var text bytes.Buffer
 	if err := s.text.Execute(&text, &data); err != nil {
-		log.Printf("[ERROR] email: cannot execute text template for build #%d: %v", req.Build.Number, err)
-		return fmt.Errorf("failed to execute text template: %w", err)
+		slog.Error("email sender cannot execute text template", "build_number", req.Build.Number, "error", err)
+		return fmt.Errorf("email sender cannot execute text template: %w", err)
 	}
 
 	//nolint:exhaustruct
@@ -114,9 +114,9 @@ func (s *EmailSender) Send(req *webhook.Request) error {
 	}
 
 	if err := emailMsg.Send(s.addr, auth); err != nil {
-		log.Printf("[ERROR] email: cannot send mail for build #%d to %s: %v", req.Build.Number, data.To, err)
-		return fmt.Errorf("failed to send email: %w", err)
+		slog.Error("email sender failed to send message", "build_number", req.Build.Number, "to", data.To, "error", err)
+		return fmt.Errorf("email sender failed to send message: %w", err)
 	}
-	log.Printf("[INFO] email: successfully sent notification for build #%d to %s", req.Build.Number, data.To)
+	slog.Info("email sender successfully sent message", "build_number", req.Build.Number, "to", data.To)
 	return nil
 }

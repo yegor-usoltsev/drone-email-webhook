@@ -1,8 +1,6 @@
 package main
 
 import (
-	"log"
-
 	"github.com/kelseyhightower/envconfig"
 )
 
@@ -23,7 +21,7 @@ func NewSettingsFromEnv() Settings {
 	var settings Settings
 	if err := envconfig.Process(envPrefix, &settings); err != nil {
 		_ = envconfig.Usage(envPrefix, &settings)
-		log.Fatalf("[FATAL] settings: failed to load configuration: %v", err)
+		panic(err)
 	}
 	return settings
 }

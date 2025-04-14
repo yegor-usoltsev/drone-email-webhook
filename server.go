@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"errors"
-	"log"
+	"log/slog"
 	"net"
 	"net/http"
 	"os"
@@ -40,7 +40,7 @@ func (s *Server) ListenAndServe(handler http.Handler) {
 	signal.Notify(shutdownCh, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		sig := <-shutdownCh
-		log.Printf("[INFO] server: received signal: %v, initiating shutdown", sig)
+		slog.Info("http server received shutdown signal", "signal", sig)
 		s.cancelServerCtx()
 	}()
 
@@ -56,24 +56,21 @@ func (s *Server) ListenAndServe(handler http.Handler) {
 	go func() {
 		listener, err := net.Listen("tcp", s.addr)
 		if err != nil {
-			log.Printf("[ERROR] server: unable to listen on %s: %v", s.addr, err)
+			slog.Error("http server unable to listen on address", "addr", s.addr, "error", err)
 			s.cancelServerCtx()
 			return
 		}
-		log.Printf("[INFO] server: listening on %v", listener.Addr())
+		slog.Info("http server started listening", "addr", listener.Addr())
 		if err = srv.Serve(listener); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			log.Printf("[ERROR] server: unable to serve: %v", err)
+			slog.Error("http server unable to handle requests", "error", err)
 			s.cancelServerCtx()
 		}
 	}()
 
 	<-s.serverCtx.Done()
-	log.Printf("[INFO] server: shutting down")
-	shutdownCtx, cancelShutdownCtx := context.WithTimeout(context.Background(), ShutdownTimeout)
-	if err := srv.Shutdown(shutdownCtx); err != nil {
-		cancelShutdownCtx()
-		log.Fatalf("[FATAL] server: failed to shut down properly: %v", err)
+	slog.Info("http server initiating shutdown")
+	if err := srv.Shutdown(context.Background()); err != nil {
+		panic(err)
 	}
-	cancelShutdownCtx()
-	log.Printf("[INFO] server: shut down properly")
+	slog.Info("http server completed shutdown")
 }

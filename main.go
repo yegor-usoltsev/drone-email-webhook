@@ -2,11 +2,20 @@ package main
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
+	"os"
 )
 
 func main() {
+	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, nil)))
+	defer func() {
+		if r := recover(); r != nil {
+			slog.Error("panic", "error", r)
+			os.Exit(1)
+		}
+	}()
+
 	settings := NewSettingsFromEnv()
 	server := NewServer(settings)
 	emailSender := NewEmailSender(settings)
@@ -25,7 +34,7 @@ func withRecovery(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			if err := recover(); err != nil {
-				log.Printf("[ERROR] server: panic recovered: %v, path: %s, method: %s", err, r.URL.Path, r.Method)
+				slog.Error("http handler panic recovered", "method", r.Method, "path", r.URL.Path, "error", err)
 				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			}
 		}()

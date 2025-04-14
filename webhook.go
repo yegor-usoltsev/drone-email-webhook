@@ -2,7 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	"log"
+	"log/slog"
 	"net/http"
 
 	"github.com/99designs/httpsignatures-go"
@@ -25,29 +25,28 @@ func NewWebhookHandler(settings Settings, emailSender EmailSenderInterface) *Web
 func (h *WebhookHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	signature, err := httpsignatures.FromRequest(r)
 	if err != nil {
-		log.Printf("[ERROR] webhook: invalid or missing signature for request from %s", r.RemoteAddr)
+		slog.Error("webhook handler received invalid or missing signature", "error", err)
 		http.Error(w, "Invalid or Missing Signature", http.StatusBadRequest)
 		return
 	}
 	if !signature.IsValid(h.secret, r) {
-		log.Printf("[ERROR] webhook: invalid signature for request from %s", r.RemoteAddr)
+		slog.Error("webhook handler received invalid signature")
 		http.Error(w, "Invalid Signature", http.StatusBadRequest)
 		return
 	}
 
 	var req webhook.Request
-	err = json.NewDecoder(r.Body).Decode(&req)
-	if err != nil {
-		log.Printf("[ERROR] webhook: cannot unmarshal request body from %s: %v", r.RemoteAddr, err)
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		slog.Error("webhook handler cannot unmarshal request body", "error", err)
 		http.Error(w, "Invalid Input", http.StatusBadRequest)
 		return
 	}
 
 	if req.Event == webhook.EventBuild && req.Action == webhook.ActionUpdated && req.Build != nil && req.Build.Status == "failure" {
-		log.Printf("[INFO] webhook: processing failure event for build #%d in repo %s", req.Build.ID, req.Repo.Slug)
+		slog.Info("webhook handler processing build failure event", "build_id", req.Build.ID, "repo_slug", req.Repo.Slug)
 		go func() {
 			if err := h.emailSender.Send(&req); err != nil {
-				log.Printf("[ERROR] webhook: failed to send email for build #%d in repo %s: %v", req.Build.ID, req.Repo.Slug, err)
+				slog.Error("webhook handler failed to send notification email", "build_id", req.Build.ID, "repo_slug", req.Repo.Slug, "error", err)
 			}
 		}()
 	}

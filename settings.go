@@ -12,8 +12,8 @@ type Settings struct {
 	ServerPort        uint16 `split_words:"true" required:"true" default:"3000"`
 	EmailSMTPHost     string `split_words:"true" required:"true" default:"localhost"`
 	EmailSMTPPort     uint16 `split_words:"true" required:"true" default:"25"`
-	EmailSMTPUsername string `split_words:"true"`
-	EmailSMTPPassword string `split_words:"true"`
+	EmailSMTPUsername string `split_words:"true" required:"false"`
+	EmailSMTPPassword string `split_words:"true" required:"false"`
 	EmailFrom         string `split_words:"true" required:"true" default:"drone@localhost"`
 }
 

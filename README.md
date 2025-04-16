@@ -43,7 +43,7 @@ Note: Make sure to replace the placeholder values with your actual configuration
 ### Environment Variables
 
 | KEY                         | TYPE      | DEFAULT           | REQUIRED |
-|-----------------------------|-----------|-------------------|----------|
+| --------------------------- | --------- | ----------------- | -------- |
 | `DRONE_SECRET`              | `String`  |                   | Yes      |
 | `DRONE_SERVER_HOST`         | `String`  | `0.0.0.0`         | Yes      |
 | `DRONE_SERVER_PORT`         | `Integer` | `3000`            | Yes      |
@@ -58,12 +58,6 @@ Note: Make sure to replace the placeholder values with your actual configuration
 This application is delivered as a multi-platform Docker image and is available for download from two image registries
 of choice: [yusoltsev/drone-email-webhook](https://hub.docker.com/r/yusoltsev/drone-email-webhook)
 and [ghcr.io/yegor-usoltsev/drone-email-webhook](https://github.com/yegor-usoltsev/drone-email-webhook/pkgs/container/drone-email-webhook).
-Images are tagged as follows:
-
-- `latest` - Tracks the latest released version, which is typically tagged with a version number. This tag is
-  recommended for most users as it provides the most stable version.
-- `edge` - Tracks the latest commits to the `main` branch.
-- `vX.Y.Z` (e.g., `v1.2.3`) - Represents a specific released version.
 
 ## Versioning
 

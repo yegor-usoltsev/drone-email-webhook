@@ -60,7 +60,7 @@ func (s *Server) ListenAndServe(handler http.Handler) {
 			s.cancelServerCtx()
 			return
 		}
-		slog.Info("http server started listening", "addr", listener.Addr())
+		slog.Info("http server started listening", "addr", listener.Addr().String())
 		if err = srv.Serve(listener); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			slog.Error("http server unable to handle requests", "error", err)
 			s.cancelServerCtx()

@@ -12,7 +12,7 @@ func main() {
 	defer func() {
 		if r := recover(); r != nil {
 			slog.Error("panic", "error", r)
-			os.Exit(1)
+			os.Exit(1) //nolint:forbidigo
 		}
 	}()
 

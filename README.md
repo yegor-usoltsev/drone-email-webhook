@@ -42,16 +42,18 @@ Note: Make sure to replace the placeholder values with your actual configuration
 
 ### Environment Variables
 
-| KEY                         | TYPE      | DEFAULT           | REQUIRED |
-| --------------------------- | --------- | ----------------- | -------- |
-| `DRONE_SECRET`              | `String`  |                   | Yes      |
-| `DRONE_SERVER_HOST`         | `String`  | `0.0.0.0`         | Yes      |
-| `DRONE_SERVER_PORT`         | `Integer` | `3000`            | Yes      |
-| `DRONE_EMAIL_SMTP_HOST`     | `String`  | `localhost`       | Yes      |
-| `DRONE_EMAIL_SMTP_PORT`     | `Integer` | `25`              | Yes      |
-| `DRONE_EMAIL_SMTP_USERNAME` | `String`  |                   | No       |
-| `DRONE_EMAIL_SMTP_PASSWORD` | `String`  |                   | No       |
-| `DRONE_EMAIL_FROM`          | `String`  | `drone@localhost` | Yes      |
+| KEY                         | TYPE                         | DEFAULT           | REQUIRED |
+| --------------------------- | ---------------------------- | ----------------- | -------- |
+| `DRONE_SECRET`              | `String`                     |                   | Yes      |
+| `DRONE_SERVER_HOST`         | `String`                     | `0.0.0.0`         | Yes      |
+| `DRONE_SERVER_PORT`         | `Integer`                    | `3000`            | Yes      |
+| `DRONE_EMAIL_SMTP_HOST`     | `String`                     | `localhost`       | Yes      |
+| `DRONE_EMAIL_SMTP_PORT`     | `Integer`                    | `25`              | Yes      |
+| `DRONE_EMAIL_SMTP_USERNAME` | `String`                     |                   | No       |
+| `DRONE_EMAIL_SMTP_PASSWORD` | `String`                     |                   | No       |
+| `DRONE_EMAIL_FROM`          | `String`                     | `drone@localhost` | Yes      |
+| `DRONE_EMAIL_CC`            | `[]String` (comma-separated) |                   | No       |
+| `DRONE_EMAIL_BCC`           | `[]String` (comma-separated) |                   | No       |
 
 ## Docker Images
 

@@ -29,6 +29,8 @@ type EmailSender struct {
 	username string
 	password string
 	from     string
+	cc       []string
+	bcc      []string
 	html     *htmlTemplate.Template
 	text     *textTemplate.Template
 }
@@ -40,6 +42,8 @@ func NewEmailSender(settings Settings) *EmailSender {
 		username: settings.EmailSMTPUsername,
 		password: settings.EmailSMTPPassword,
 		from:     settings.EmailFrom,
+		cc:       settings.EmailCC,
+		bcc:      settings.EmailBCC,
 		html:     htmlTemplate.Must(htmlTemplate.New("html").Parse(htmlTemplateStr)),
 		text:     textTemplate.Must(textTemplate.New("text").Parse(textTemplateStr)),
 	}
@@ -102,6 +106,8 @@ func (s *EmailSender) Send(req *webhook.Request) error {
 	emailMsg := &email.Email{
 		From:    data.From,
 		To:      []string{data.To},
+		Cc:      s.cc,
+		Bcc:     s.bcc,
 		Subject: data.Subject,
 		HTML:    html.Bytes(),
 		Text:    text.Bytes(),

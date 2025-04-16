@@ -24,9 +24,8 @@ func NewMockEmailSender() *MockEmailSender {
 	return &MockEmailSender{}
 }
 
-func (m *MockEmailSender) Send(req *webhook.Request) error {
-	args := m.Called(req)
-	return args.Error(0)
+func (m *MockEmailSender) SendAsync(req *webhook.Request) {
+	m.Called(req)
 }
 
 var (
@@ -175,7 +174,7 @@ func TestWebhookHandler_ServeHTTP(t *testing.T) {
 			t.Parallel()
 			mockEmailSender := NewMockEmailSender()
 			if tt.emailSent {
-				mockEmailSender.On("Send", tt.request).Return(tt.emailError)
+				mockEmailSender.On("SendAsync", tt.request).Return()
 			}
 
 			handler := NewWebhookHandler(Settings{Secret: tt.secret}, mockEmailSender)

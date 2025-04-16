@@ -11,6 +11,7 @@ import (
 	"net/textproto"
 	"strconv"
 	"strings"
+	"sync"
 	textTemplate "text/template"
 
 	"github.com/drone/drone-go/plugin/webhook"
@@ -33,6 +34,7 @@ type EmailSender struct {
 	bcc      []string
 	html     *htmlTemplate.Template
 	text     *textTemplate.Template
+	wg       sync.WaitGroup
 }
 
 func NewEmailSender(settings Settings) *EmailSender {
@@ -46,7 +48,20 @@ func NewEmailSender(settings Settings) *EmailSender {
 		bcc:      settings.EmailBCC,
 		html:     htmlTemplate.Must(htmlTemplate.New("html").Parse(htmlTemplateStr)),
 		text:     textTemplate.Must(textTemplate.New("text").Parse(textTemplateStr)),
+		wg:       sync.WaitGroup{},
 	}
+}
+
+func (s *EmailSender) Wait() {
+	s.wg.Wait()
+}
+
+func (s *EmailSender) SendAsync(req *webhook.Request) {
+	s.wg.Add(1)
+	go func() {
+		defer s.wg.Done()
+		_ = s.Send(req)
+	}()
 }
 
 func (s *EmailSender) Send(req *webhook.Request) error {

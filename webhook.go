@@ -11,14 +11,14 @@ import (
 
 type WebhookHandler struct {
 	secret      string
-	emailSender EmailSenderInterface
+	emailSender AsyncEmailSender
 }
 
-type EmailSenderInterface interface {
-	Send(req *webhook.Request) error
+type AsyncEmailSender interface {
+	SendAsync(req *webhook.Request)
 }
 
-func NewWebhookHandler(settings Settings, emailSender EmailSenderInterface) *WebhookHandler {
+func NewWebhookHandler(settings Settings, emailSender AsyncEmailSender) *WebhookHandler {
 	return &WebhookHandler{secret: settings.Secret, emailSender: emailSender}
 }
 
@@ -44,11 +44,7 @@ func (h *WebhookHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if req.Event == webhook.EventBuild && req.Action == webhook.ActionUpdated && req.Build != nil && req.Build.Status == "failure" {
 		slog.Info("webhook handler processing build failure event", "build_id", req.Build.ID, "repo_slug", req.Repo.Slug)
-		go func() {
-			if err := h.emailSender.Send(&req); err != nil {
-				slog.Error("webhook handler failed to send notification email", "build_id", req.Build.ID, "repo_slug", req.Repo.Slug, "error", err)
-			}
-		}()
+		h.emailSender.SendAsync(&req)
 	}
 
 	w.WriteHeader(http.StatusNoContent)

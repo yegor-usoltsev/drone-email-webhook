@@ -19,6 +19,7 @@ func main() {
 	settings := NewSettingsFromEnv()
 	server := NewServer(settings)
 	emailSender := NewEmailSender(settings)
+	defer emailSender.Wait()
 	webhookHandler := NewWebhookHandler(settings, emailSender)
 
 	mux := http.NewServeMux()

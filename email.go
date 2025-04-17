@@ -12,17 +12,25 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	textTemplate "text/template"
+	"time"
 
 	"github.com/drone/drone-go/plugin/webhook"
 	"github.com/jordan-wright/email"
 )
 
-//go:embed email.html
-var htmlTemplateStr string
+const emailSenderShutdownTimeout = 60 * time.Second
 
-//go:embed email.txt
-var textTemplateStr string
+var (
+	//go:embed email.html
+	htmlTemplStr string
+	//go:embed email.txt
+	textTemplStr string
+
+	htmlTempl = htmlTemplate.Must(htmlTemplate.New("html").Parse(htmlTemplStr)) //nolint:gochecknoglobals
+	textTempl = textTemplate.Must(textTemplate.New("text").Parse(textTemplStr)) //nolint:gochecknoglobals
+)
 
 type EmailSender struct {
 	host     string
@@ -32,31 +40,31 @@ type EmailSender struct {
 	from     string
 	cc       []string
 	bcc      []string
-	html     *htmlTemplate.Template
-	text     *textTemplate.Template
-	wg       sync.WaitGroup
+
+	closed atomic.Bool
+	wg     sync.WaitGroup
 }
 
-func NewEmailSender(settings Settings) *EmailSender {
+func NewEmailSender(cfg Config) *EmailSender {
 	return &EmailSender{
-		host:     settings.EmailSMTPHost,
-		addr:     net.JoinHostPort(settings.EmailSMTPHost, strconv.Itoa(int(settings.EmailSMTPPort))),
-		username: settings.EmailSMTPUsername,
-		password: settings.EmailSMTPPassword,
-		from:     settings.EmailFrom,
-		cc:       settings.EmailCC,
-		bcc:      settings.EmailBCC,
-		html:     htmlTemplate.Must(htmlTemplate.New("html").Parse(htmlTemplateStr)),
-		text:     textTemplate.Must(textTemplate.New("text").Parse(textTemplateStr)),
-		wg:       sync.WaitGroup{},
+		host:     cfg.EmailSMTPHost,
+		addr:     net.JoinHostPort(cfg.EmailSMTPHost, strconv.Itoa(int(cfg.EmailSMTPPort))),
+		username: cfg.EmailSMTPUsername,
+		password: cfg.EmailSMTPPassword,
+		from:     cfg.EmailFrom,
+		cc:       cfg.EmailCC,
+		bcc:      cfg.EmailBCC,
+
+		closed: atomic.Bool{},
+		wg:     sync.WaitGroup{},
 	}
 }
 
-func (s *EmailSender) Wait() {
-	s.wg.Wait()
-}
-
 func (s *EmailSender) SendAsync(req *webhook.Request) {
+	if s.closed.Load() {
+		return
+	}
+
 	s.wg.Add(1)
 	go func() {
 		defer s.wg.Done()
@@ -91,7 +99,7 @@ func (s *EmailSender) Send(req *webhook.Request) error {
 		DroneServerLink string
 	}{
 		Subject:         fmt.Sprintf("[%s] Failed build #%d for %s (%s)", req.Repo.Slug, req.Build.Number, req.Build.Ref, commitHash),
-		From:            fmt.Sprintf("%s <%s>", "Drone", s.from),
+		From:            s.from,
 		To:              fmt.Sprintf("%s <%s>", author, req.Build.AuthorEmail),
 		Header:          fmt.Sprintf("Build #%d has failed", req.Build.Number),
 		Repository:      req.Repo.Slug,
@@ -106,13 +114,13 @@ func (s *EmailSender) Send(req *webhook.Request) error {
 	}
 
 	var html bytes.Buffer
-	if err := s.html.Execute(&html, &data); err != nil {
+	if err := htmlTempl.Execute(&html, &data); err != nil {
 		slog.Error("email sender cannot execute HTML template", "build_number", req.Build.Number, "error", err)
 		return fmt.Errorf("email sender cannot execute HTML template: %w", err)
 	}
 
 	var text bytes.Buffer
-	if err := s.text.Execute(&text, &data); err != nil {
+	if err := textTempl.Execute(&text, &data); err != nil {
 		slog.Error("email sender cannot execute text template", "build_number", req.Build.Number, "error", err)
 		return fmt.Errorf("email sender cannot execute text template: %w", err)
 	}
@@ -140,4 +148,24 @@ func (s *EmailSender) Send(req *webhook.Request) error {
 	}
 	slog.Info("email sender successfully sent message", "build_number", req.Build.Number, "to", data.To)
 	return nil
+}
+
+func (s *EmailSender) Shutdown() {
+	if s.closed.Swap(true) {
+		return
+	}
+	slog.Info("email sender initiating shutdown")
+
+	done := make(chan struct{})
+	go func() {
+		s.wg.Wait()
+		close(done)
+	}()
+
+	select {
+	case <-done:
+		slog.Info("email sender completed shutdown")
+	case <-time.After(emailSenderShutdownTimeout):
+		slog.Error("email sender shutdown timed out")
+	}
 }

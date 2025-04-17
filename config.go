@@ -6,7 +6,7 @@ import (
 
 const envPrefix = "DRONE"
 
-type Settings struct {
+type Config struct {
 	Secret            string   `split_words:"true" required:"true"`
 	ServerHost        string   `split_words:"true" required:"true" default:"0.0.0.0"`
 	ServerPort        uint16   `split_words:"true" required:"true" default:"3000"`
@@ -19,11 +19,11 @@ type Settings struct {
 	EmailBCC          []string `split_words:"true" required:"false"`
 }
 
-func NewSettingsFromEnv() Settings {
-	var settings Settings
-	if err := envconfig.Process(envPrefix, &settings); err != nil {
-		_ = envconfig.Usage(envPrefix, &settings)
+func NewConfigFromEnv() Config {
+	var cfg Config
+	if err := envconfig.Process(envPrefix, &cfg); err != nil {
+		_ = envconfig.Usage(envPrefix, &cfg)
 		panic(err)
 	}
-	return settings
+	return cfg
 }

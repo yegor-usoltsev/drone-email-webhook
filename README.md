@@ -44,16 +44,16 @@ Note: Make sure to replace the placeholder values with your actual configuration
 
 | KEY                         | TYPE                         | DEFAULT           | REQUIRED |
 | --------------------------- | ---------------------------- | ----------------- | -------- |
-| `DRONE_SECRET`              | `String`                     |                   | Yes      |
-| `DRONE_SERVER_HOST`         | `String`                     | `0.0.0.0`         | Yes      |
-| `DRONE_SERVER_PORT`         | `Integer`                    | `3000`            | Yes      |
-| `DRONE_EMAIL_SMTP_HOST`     | `String`                     | `localhost`       | Yes      |
-| `DRONE_EMAIL_SMTP_PORT`     | `Integer`                    | `25`              | Yes      |
-| `DRONE_EMAIL_SMTP_USERNAME` | `String`                     |                   | No       |
-| `DRONE_EMAIL_SMTP_PASSWORD` | `String`                     |                   | No       |
-| `DRONE_EMAIL_FROM`          | `String`                     | `drone@localhost` | Yes      |
-| `DRONE_EMAIL_CC`            | `[]String` (comma-separated) |                   | No       |
-| `DRONE_EMAIL_BCC`           | `[]String` (comma-separated) |                   | No       |
+| `DRONE_SECRET`              | `string`                     |                   | Yes      |
+| `DRONE_SERVER_HOST`         | `string`                     | `0.0.0.0`         | Yes      |
+| `DRONE_SERVER_PORT`         | `uint16`                     | `3000`            | Yes      |
+| `DRONE_EMAIL_SMTP_HOST`     | `string`                     | `localhost`       | Yes      |
+| `DRONE_EMAIL_SMTP_PORT`     | `uint16`                     | `25`              | Yes      |
+| `DRONE_EMAIL_SMTP_USERNAME` | `string`                     |                   | No       |
+| `DRONE_EMAIL_SMTP_PASSWORD` | `string`                     |                   | No       |
+| `DRONE_EMAIL_FROM`          | `string`                     | `drone@localhost` | Yes      |
+| `DRONE_EMAIL_CC`            | `[]string` (comma-separated) |                   | No       |
+| `DRONE_EMAIL_BCC`           | `[]string` (comma-separated) |                   | No       |
 
 ## Docker Images
 

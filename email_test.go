@@ -1,314 +1,238 @@
 package main
 
 import (
+	"encoding/json"
+	"fmt"
+	"math/rand/v2"
 	"net"
-	"strings"
+	"net/http"
+	"net/mail"
+	"net/url"
 	"testing"
 
+	"github.com/docker/go-connections/nat"
 	"github.com/drone/drone-go/drone"
 	"github.com/drone/drone-go/plugin/webhook"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/testcontainers/testcontainers-go"
-	"github.com/testcontainers/testcontainers-go/wait"
+	tc "github.com/testcontainers/testcontainers-go"
+	tcWait "github.com/testcontainers/testcontainers-go/wait"
 )
 
-func setupMailHog(t *testing.T) (string, uint16, func()) {
+func setupMailpit(t *testing.T) *MailpitClient {
 	t.Helper()
-	ctx := t.Context()
-
-	req := testcontainers.ContainerRequest{
-		Image:        "mailhog/mailhog:latest",
-		ExposedPorts: []string{"1025/tcp", "8025/tcp"},
-		WaitingFor:   wait.ForListeningPort("1025/tcp"),
-	}
-
-	container, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
-		ContainerRequest: req,
-		Started:          true,
+	container, err := tc.GenericContainer(t.Context(), tc.GenericContainerRequest{
+		ContainerRequest: tc.ContainerRequest{
+			Image: "axllent/mailpit:latest",
+			Env: map[string]string{
+				"MP_SMTP_AUTH_ACCEPT_ANY":     "true",
+				"MP_SMTP_AUTH_ALLOW_INSECURE": "true",
+			},
+			ExposedPorts: []string{"1025/tcp", "8025/tcp"},
+			WaitingFor:   tcWait.ForHTTP("/readyz").WithPort("8025"),
+		},
+		Started: true,
 	})
+	tc.CleanupContainer(t, container)
 	require.NoError(t, err)
 
-	host, err := container.Host(ctx)
+	host, err := container.Host(t.Context())
 	require.NoError(t, err)
 
-	smtpPort, err := container.MappedPort(ctx, "1025/tcp")
+	smtpPort, err := container.MappedPort(t.Context(), "1025/tcp")
 	require.NoError(t, err)
 
-	return host, uint16(smtpPort.Int()), func() {
-		_ = container.Terminate(ctx)
+	httpPort, err := container.MappedPort(t.Context(), "8025/tcp")
+	require.NoError(t, err)
+
+	return NewMailpitClient(t, host, smtpPort, httpPort)
+}
+
+func buildConfig(mailpit *MailpitClient, fns ...func(*Config)) Config {
+	cfg := Config{
+		EmailSMTPHost:     mailpit.host,
+		EmailSMTPPort:     uint16(mailpit.smtpPort),
+		EmailSMTPUsername: "drone@example.com",
+		EmailSMTPPassword: "password123",
+		EmailFrom:         "ci@example.com",
+		EmailCC:           []string{"admin@example.com"},
+		EmailBCC:          []string{"security@example.com"},
 	}
-}
-
-func getFreePort(t *testing.T) uint16 {
-	t.Helper()
-	listener, err := net.Listen("tcp", "localhost:0")
-	require.NoError(t, err)
-	defer listener.Close()
-	return uint16(listener.Addr().(*net.TCPAddr).Port)
-}
-
-func TestEmailSender_Send(t *testing.T) {
-	t.Parallel()
-	host, port, cleanup := setupMailHog(t)
-	t.Cleanup(cleanup)
-
-	tests := []struct {
-		name     string
-		settings Settings
-		req      *webhook.Request
-		wantErr  bool
-		useAuth  bool
-	}{
-		{
-			name: "successful_email_with_auth",
-			settings: Settings{
-				EmailSMTPHost:     host,
-				EmailSMTPPort:     port,
-				EmailFrom:         "test@example.com",
-				EmailSMTPUsername: "test-user",
-				EmailSMTPPassword: "test-pass",
-			},
-			useAuth: true,
-			req: &webhook.Request{
-				Build: &drone.Build{
-					Number:      1,
-					AuthorName:  "Test User",
-					Author:      "test",
-					AuthorEmail: "test@example.com",
-					Message:     "Test commit\nMore details",
-					After:       "abcdef1234567890",
-					Ref:         "refs/heads/main",
-				},
-				Repo: &drone.Repo{
-					Slug: "test/repo",
-				},
-				System: &drone.System{
-					Host: "drone.example.com",
-					Link: "https://drone.example.com",
-				},
-			},
-			wantErr: false,
-		},
-		{
-			name: "successful_email_without_auth",
-			settings: Settings{
-				EmailSMTPHost: host,
-				EmailSMTPPort: port,
-				EmailFrom:     "test@example.com",
-			},
-			useAuth: false,
-			req: &webhook.Request{
-				Build: &drone.Build{
-					Number:      2,
-					Author:      "test",
-					AuthorEmail: "test@example.com",
-					Message:     "Test commit",
-					After:       "abcdef1234567890",
-					Ref:         "refs/heads/feature",
-				},
-				Repo: &drone.Repo{
-					Slug: "test/repo",
-				},
-				System: &drone.System{
-					Host: "drone.example.com",
-					Link: "https://drone.example.com",
-				},
-			},
-			wantErr: false,
-		},
-		{
-			name: "empty_commit_message",
-			settings: Settings{
-				EmailSMTPHost: host,
-				EmailSMTPPort: port,
-				EmailFrom:     "test@example.com",
-			},
-			useAuth: false,
-			req: &webhook.Request{
-				Build: &drone.Build{
-					Number:      3,
-					Author:      "test",
-					AuthorEmail: "test@example.com",
-					Message:     "",
-					After:       "abcdef1234567890",
-					Ref:         "refs/heads/main",
-				},
-				Repo: &drone.Repo{
-					Slug: "test/repo",
-				},
-				System: &drone.System{
-					Host: "drone.example.com",
-					Link: "https://drone.example.com",
-				},
-			},
-			wantErr: false,
-		},
-		{
-			name: "very_long_commit_message",
-			settings: Settings{
-				EmailSMTPHost: host,
-				EmailSMTPPort: port,
-				EmailFrom:     "test@example.com",
-			},
-			useAuth: false,
-			req: &webhook.Request{
-				Build: &drone.Build{
-					Number:      4,
-					Author:      "test",
-					AuthorEmail: "test@example.com",
-					Message:     strings.Repeat("Very long commit message. ", 100),
-					After:       "abcdef1234567890",
-					Ref:         "refs/heads/main",
-				},
-				Repo: &drone.Repo{
-					Slug: "test/repo",
-				},
-				System: &drone.System{
-					Host: "drone.example.com",
-					Link: "https://drone.example.com",
-				},
-			},
-			wantErr: false,
-		},
-		{
-			name: "missing_author_email",
-			settings: Settings{
-				EmailSMTPHost: host,
-				EmailSMTPPort: port,
-				EmailFrom:     "test@example.com",
-			},
-			useAuth: false,
-			req: &webhook.Request{
-				Build: &drone.Build{
-					Number:  5,
-					Author:  "test",
-					Message: "Test commit",
-					After:   "abcdef1234567890",
-					Ref:     "refs/heads/main",
-				},
-				Repo: &drone.Repo{
-					Slug: "test/repo",
-				},
-				System: &drone.System{
-					Host: "drone.example.com",
-					Link: "https://drone.example.com",
-				},
-			},
-			wantErr: true,
-		},
-		{
-			name: "short_commit_hash",
-			settings: Settings{
-				EmailSMTPHost: host,
-				EmailSMTPPort: port,
-				EmailFrom:     "test@example.com",
-			},
-			useAuth: false,
-			req: &webhook.Request{
-				Build: &drone.Build{
-					Number:      6,
-					Author:      "test",
-					AuthorEmail: "test@example.com",
-					Message:     "Test commit",
-					After:       "abc",
-					Ref:         "refs/heads/main",
-				},
-				Repo: &drone.Repo{
-					Slug: "test/repo",
-				},
-				System: &drone.System{
-					Host: "drone.example.com",
-					Link: "https://drone.example.com",
-				},
-			},
-			wantErr: false,
-		},
-		{
-			name: "with_author_avatar",
-			settings: Settings{
-				EmailSMTPHost: host,
-				EmailSMTPPort: port,
-				EmailFrom:     "test@example.com",
-			},
-			useAuth: false,
-			req: &webhook.Request{
-				Build: &drone.Build{
-					Number:       7,
-					Author:       "test",
-					AuthorEmail:  "test@example.com",
-					AuthorAvatar: "https://example.com/avatar.jpg",
-					Message:      "Test commit",
-					After:        "abcdef1234567890",
-					Ref:          "refs/heads/main",
-				},
-				Repo: &drone.Repo{
-					Slug: "test/repo",
-				},
-				System: &drone.System{
-					Host: "drone.example.com",
-					Link: "https://drone.example.com",
-				},
-			},
-			wantErr: false,
-		},
+	for _, fn := range fns {
+		fn(&cfg)
 	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			sender := NewEmailSender(tt.settings)
-			err := sender.Send(tt.req)
-			if tt.wantErr {
-				assert.Error(t, err)
-			} else {
-				assert.NoError(t, err)
-			}
-		})
-	}
+	return cfg
 }
 
-func TestEmailSender_TemplateExecution(t *testing.T) {
-	t.Parallel()
-	host, port, cleanup := setupMailHog(t)
-	t.Cleanup(cleanup)
-
-	s := NewEmailSender(Settings{
-		EmailSMTPHost: host,
-		EmailSMTPPort: port,
-		EmailFrom:     "test@example.com",
-	})
-
-	assert.NotNil(t, s.html, "HTML template should be parsed")
-	assert.NotNil(t, s.text, "Text template should be parsed")
-}
-
-func TestEmailSender_InvalidSMTP(t *testing.T) {
-	t.Parallel()
-	sender := NewEmailSender(Settings{
-		EmailSMTPHost: "localhost",
-		EmailSMTPPort: getFreePort(t),
-		EmailFrom:     "test@example.com",
-	})
-
+func buildWebhookRequest(fns ...func(*webhook.Request)) *webhook.Request {
 	req := &webhook.Request{
-		Build: &drone.Build{
-			Number:      1,
-			Author:      "test",
-			AuthorEmail: "test@example.com",
-			Message:     "Test commit",
-			After:       "abcdef1234567890",
-			Ref:         "refs/heads/main",
-		},
+		Event:  webhook.EventBuild,
+		Action: webhook.ActionUpdated,
 		Repo: &drone.Repo{
 			Slug: "test/repo",
+		},
+		Build: &drone.Build{
+			ID:           rand.Int64(),
+			Number:       rand.Int64(),
+			Status:       "failure",
+			Ref:          "refs/heads/main",
+			Message:      "test commit",
+			After:        "e92d9f39abe709d90e8072b8ec992f2c3a02a07a",
+			Author:       "test",
+			AuthorName:   "Test User",
+			AuthorEmail:  "test@example.com",
+			AuthorAvatar: "https://example.com/avatar.png",
 		},
 		System: &drone.System{
 			Host: "drone.example.com",
 			Link: "https://drone.example.com",
 		},
 	}
+	for _, fn := range fns {
+		fn(req)
+	}
+	return req
+}
 
-	err := sender.Send(req)
-	assert.Error(t, err)
+func TestEmailSender(t *testing.T) {
+	mailpit := setupMailpit(t)
+
+	t.Run("send async", func(t *testing.T) {
+		t.Parallel()
+		cfg := buildConfig(mailpit)
+		emailSender := NewEmailSender(cfg)
+		req := buildWebhookRequest()
+
+		emailSender.SendAsync(req)
+		emailSender.Shutdown()
+
+		msg := mailpit.FindByBuildNumber(req.Build.Number)
+		require.NotNil(t, msg)
+		assert.Equal(t, mail.Address{Address: cfg.EmailFrom}, msg.From)
+		assert.Equal(t, []mail.Address{{Name: req.Build.AuthorName, Address: req.Build.AuthorEmail}}, msg.To)
+		assert.Equal(t, []mail.Address{{Address: cfg.EmailCC[0]}}, msg.Cc)
+		assert.Equal(t, []mail.Address{{Address: cfg.EmailBCC[0]}}, msg.Bcc)
+		assert.Equal(t, fmt.Sprintf("[%s] Failed build #%d for %s (%s)", req.Repo.Slug, req.Build.Number, req.Build.Ref, req.Build.After[:8]), msg.Subject)
+	})
+
+	t.Run("send async with closed sender", func(t *testing.T) {
+		t.Parallel()
+		cfg := buildConfig(mailpit)
+		emailSender := NewEmailSender(cfg)
+		req := buildWebhookRequest()
+
+		emailSender.Shutdown()
+		emailSender.SendAsync(req)
+
+		msg := mailpit.FindByBuildNumber(req.Build.Number)
+		assert.Nil(t, msg)
+	})
+
+	t.Run("send", func(t *testing.T) {
+		t.Parallel()
+		cfg := buildConfig(mailpit)
+		emailSender := NewEmailSender(cfg)
+		req := buildWebhookRequest()
+
+		err := emailSender.Send(req)
+		require.NoError(t, err)
+
+		msg := mailpit.FindByBuildNumber(req.Build.Number)
+		assert.NotNil(t, msg)
+	})
+
+	t.Run("send with empty author name", func(t *testing.T) {
+		t.Parallel()
+		cfg := buildConfig(mailpit)
+		emailSender := NewEmailSender(cfg)
+		req := buildWebhookRequest(func(req *webhook.Request) {
+			req.Build.AuthorName = ""
+		})
+
+		err := emailSender.Send(req)
+		require.NoError(t, err)
+
+		msg := mailpit.FindByBuildNumber(req.Build.Number)
+		require.NotNil(t, msg)
+		assert.Equal(t, []mail.Address{{Name: req.Build.Author, Address: req.Build.AuthorEmail}}, msg.To)
+	})
+
+	t.Run("send with invalid SMTP addr", func(t *testing.T) {
+		t.Parallel()
+		cfg := buildConfig(mailpit, func(cfg *Config) {
+			l, err := net.Listen("tcp", "127.0.0.1:0")
+			require.NoError(t, err)
+			defer l.Close()
+			cfg.EmailSMTPHost = "127.0.0.1"
+			cfg.EmailSMTPPort = uint16(l.Addr().(*net.TCPAddr).Port)
+		})
+		emailSender := NewEmailSender(cfg)
+		req := buildWebhookRequest()
+
+		err := emailSender.Send(req)
+		require.Error(t, err)
+
+		msg := mailpit.FindByBuildNumber(req.Build.Number)
+		assert.Nil(t, msg)
+	})
+
+	t.Run("shutdown", func(t *testing.T) {
+		t.Parallel()
+		cfg := buildConfig(mailpit)
+		emailSender := NewEmailSender(cfg)
+		assert.NotPanics(t, func() { emailSender.Shutdown() })
+		assert.NotPanics(t, func() { emailSender.Shutdown() })
+	})
+}
+
+type MailpitClient struct {
+	t         *testing.T
+	host      string
+	smtpPort  int
+	httpPort  int
+	searchURL string
+}
+
+func NewMailpitClient(t *testing.T, host string, smtpPort, httpPort nat.Port) *MailpitClient {
+	t.Helper()
+	return &MailpitClient{
+		t:         t,
+		host:      host,
+		smtpPort:  smtpPort.Int(),
+		httpPort:  httpPort.Int(),
+		searchURL: "http://" + net.JoinHostPort(host, httpPort.Port()) + "/api/v1/search",
+	}
+}
+
+func (m *MailpitClient) FindByBuildNumber(buildNumber int64) *MessageSummary {
+	req, err := http.NewRequestWithContext(m.t.Context(), http.MethodGet, m.searchURL, http.NoBody)
+	require.NoError(m.t, err)
+	req.URL.RawQuery = url.Values{
+		"query": []string{fmt.Sprintf(`subject:"%d"`, buildNumber)},
+	}.Encode()
+
+	res, err := http.DefaultClient.Do(req)
+	require.NoError(m.t, err)
+	defer res.Body.Close()
+
+	var body MessagesSummaryResponse
+	err = json.NewDecoder(res.Body).Decode(&body)
+	require.NoError(m.t, err)
+	if len(body.Messages) == 0 {
+		return nil
+	}
+	return &body.Messages[0]
+}
+
+type MessagesSummaryResponse struct {
+	Messages []MessageSummary `json:"messages"`
+}
+
+//nolint:tagliatelle
+type MessageSummary struct {
+	From    mail.Address   `json:"From"`
+	To      []mail.Address `json:"To"`
+	Cc      []mail.Address `json:"Cc"`
+	Bcc     []mail.Address `json:"Bcc"`
+	Subject string         `json:"Subject"`
 }

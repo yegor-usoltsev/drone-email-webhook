@@ -3,155 +3,55 @@ package main
 import (
 	"net"
 	"net/http"
-	"net/http/httptest"
-	"strconv"
 	"testing"
-	"time"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func TestWithRecovery(t *testing.T) {
+func TestNewServer(t *testing.T) {
 	t.Parallel()
-	tests := []struct {
-		name           string
-		handler        http.HandlerFunc
-		expectedStatus int
-	}{
-		{
-			name: "normal handler",
-			handler: func(w http.ResponseWriter, _ *http.Request) {
-				w.WriteHeader(http.StatusOK)
-			},
-			expectedStatus: http.StatusOK,
-		},
-		{
-			name: "panic handler",
-			handler: func(_ http.ResponseWriter, _ *http.Request) {
-				panic("test panic")
-			},
-			expectedStatus: http.StatusInternalServerError,
-		},
+	cfg := Config{
+		ServerHost: "2001:db8::1234:5678",
+		ServerPort: 8080,
 	}
+	handler := http.NewServeMux()
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			wrapped := withRecovery(tt.handler)
-			req := httptest.NewRequest(http.MethodGet, "/", nil)
-			w := httptest.NewRecorder()
-			wrapped.ServeHTTP(w, req)
+	server := NewServer(cfg, handler)
 
-			if w.Code != tt.expectedStatus {
-				t.Errorf("expected status %d, got %d", tt.expectedStatus, w.Code)
-			}
-		})
-	}
+	assert.Equal(t, "[2001:db8::1234:5678]:8080", server.Addr)
+	assert.Equal(t, handler, server.Handler)
+	assert.Equal(t, serverReadTimeout, server.ReadTimeout)
+	assert.Equal(t, serverWriteTimeout, server.WriteTimeout)
+	assert.Equal(t, serverIdleTimeout, server.IdleTimeout)
 }
 
-func TestServer(t *testing.T) {
+func TestServer_StartAsync_Stop(t *testing.T) {
 	t.Parallel()
-	settings := Settings{
+	cfg := Config{
 		ServerHost: "localhost",
 		ServerPort: 0,
 	}
-	server := NewServer(settings)
+	handler := http.NewServeMux()
+	server := NewServer(cfg, handler)
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("GET /test", func(w http.ResponseWriter, _ *http.Request) {
-		w.WriteHeader(http.StatusOK)
-	})
-
-	go server.ListenAndServe(mux)
-
-	time.Sleep(100 * time.Millisecond)
-
-	req := httptest.NewRequest(http.MethodGet, "/test", nil)
-	w := httptest.NewRecorder()
-	mux.ServeHTTP(w, req)
-
-	if w.Code != http.StatusOK {
-		t.Errorf("expected status %d, got %d", http.StatusOK, w.Code)
-	}
-
-	server.cancelServerCtx()
-	time.Sleep(100 * time.Millisecond)
+	assert.NotPanics(t, func() { server.StartAsync() })
+	assert.NotPanics(t, func() { server.Stop() })
 }
 
-func TestHealthCheck(t *testing.T) {
+func TestServer_StartAsync_AddressAlreadyInUse(t *testing.T) {
 	t.Parallel()
-	mux := http.NewServeMux()
-	mux.HandleFunc("GET /health", func(w http.ResponseWriter, _ *http.Request) {
-		w.WriteHeader(http.StatusOK)
-	})
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	defer func() { _ = listener.Close() }()
+	require.NoError(t, err)
+	addr := listener.Addr().(*net.TCPAddr)
 
-	req := httptest.NewRequest(http.MethodGet, "/health", nil)
-	w := httptest.NewRecorder()
-	mux.ServeHTTP(w, req)
-
-	if w.Code != http.StatusOK {
-		t.Errorf("expected status %d, got %d", http.StatusOK, w.Code)
+	cfg := Config{
+		ServerHost: addr.IP.String(),
+		ServerPort: uint16(addr.Port),
 	}
-}
+	handler := http.NewServeMux()
+	server := NewServer(cfg, handler)
 
-func TestServer_ListenAndServe(t *testing.T) {
-	t.Parallel()
-	tests := []struct {
-		name     string
-		settings Settings
-		wantErr  bool
-	}{
-		{
-			name: "successful_startup",
-			settings: Settings{
-				ServerHost: "localhost",
-				ServerPort: 0,
-			},
-			wantErr: false,
-		},
-		{
-			name: "invalid_host",
-			settings: Settings{
-				ServerHost: "invalid-host",
-				ServerPort: 8080,
-			},
-			wantErr: true,
-		},
-		{
-			name: "port_already_in_use",
-			settings: Settings{
-				ServerHost: "localhost",
-				ServerPort: 0,
-			},
-			wantErr: false,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			server := NewServer(tt.settings)
-
-			if tt.name == "port_already_in_use" {
-				listener, err := net.Listen("tcp", "localhost:0")
-				require.NoError(t, err)
-				defer listener.Close()
-				addr := listener.Addr().(*net.TCPAddr)
-				tt.settings.ServerPort = uint16(addr.Port)
-			}
-			handler := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-				w.WriteHeader(http.StatusOK)
-			})
-			go func() {
-				server.ListenAndServe(handler)
-			}()
-			time.Sleep(100 * time.Millisecond)
-			if !tt.wantErr {
-				conn, err := net.Dial("tcp", net.JoinHostPort("localhost", strconv.Itoa(int(tt.settings.ServerPort))))
-				if err == nil {
-					conn.Close()
-				}
-			}
-		})
-	}
+	assert.Panics(t, func() { server.StartAsync() })
 }

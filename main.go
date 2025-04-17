@@ -1,10 +1,11 @@
 package main
 
 import (
-	"fmt"
+	"context"
 	"log/slog"
-	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 )
 
 func main() {
@@ -16,29 +17,16 @@ func main() {
 		}
 	}()
 
-	settings := NewSettingsFromEnv()
-	server := NewServer(settings)
-	emailSender := NewEmailSender(settings)
-	defer emailSender.Wait()
-	webhookHandler := NewWebhookHandler(settings, emailSender)
+	ctx, cancelCtx := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer cancelCtx()
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("GET /health", func(w http.ResponseWriter, _ *http.Request) {
-		_, _ = fmt.Fprint(w, "OK")
-	})
-	mux.Handle("POST /", withRecovery(webhookHandler.ServeHTTP))
+	cfg := NewConfigFromEnv()
+	emailSender := NewEmailSender(cfg)
+	defer emailSender.Shutdown()
+	h := NewHandler(cfg, emailSender)
+	srv := NewServer(cfg, h)
+	srv.StartAsync()
+	defer srv.Stop()
 
-	server.ListenAndServe(mux)
-}
-
-func withRecovery(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		defer func() {
-			if err := recover(); err != nil {
-				slog.Error("http handler panic recovered", "method", r.Method, "path", r.URL.Path, "error", err)
-				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-			}
-		}()
-		next.ServeHTTP(w, r)
-	}
+	<-ctx.Done()
 }

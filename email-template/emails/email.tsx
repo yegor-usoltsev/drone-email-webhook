@@ -52,10 +52,15 @@ export const Email = ({
   droneServerLink,
 }: EmailProps) => {
   return (
-    <Tailwind>
+    <Tailwind
+      config={{
+        presets: [require("tailwindcss-preset-email")],
+        important: false,
+      }}
+    >
       <Html>
         <Head />
-        <Body className="bg-slate-100 font-sans text-slate-800 dark:bg-slate-900 dark:text-slate-200">
+        <Body className="bg-slate-100 font-sans text-[16px] text-slate-800 dark:bg-slate-900 dark:text-slate-200">
           <Container>
             <Img
               className="mx-auto my-6"

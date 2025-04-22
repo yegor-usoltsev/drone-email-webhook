@@ -4,7 +4,7 @@ Repository: {{.Repository}}
 Reference: {{.Reference}}
 Commit Hash: {{.CommitHash}}
 Commit Message: {{.CommitMessage}}
-Commit Author: {{.AuthorName}}
+Author: {{.AuthorName}}
 
 View build: {{.DroneBuildLink}}
 

@@ -160,7 +160,8 @@ func TestEmailSender(t *testing.T) {
 	t.Run("send with invalid SMTP addr", func(t *testing.T) {
 		t.Parallel()
 		cfg := buildConfig(mailpit, func(cfg *Config) {
-			l, err := net.Listen("tcp", "127.0.0.1:0")
+			var lc net.ListenConfig
+			l, err := lc.Listen(t.Context(), "tcp", "127.0.0.1:0")
 			require.NoError(t, err)
 			defer l.Close()
 			cfg.EmailSMTPHost = "127.0.0.1"

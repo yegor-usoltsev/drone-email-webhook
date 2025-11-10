@@ -65,11 +65,9 @@ func (s *EmailSender) SendAsync(req *webhook.Request) {
 		return
 	}
 
-	s.wg.Add(1)
-	go func() {
-		defer s.wg.Done()
+	s.wg.Go(func() {
 		_ = s.Send(req)
-	}()
+	})
 }
 
 func (s *EmailSender) Send(req *webhook.Request) error {

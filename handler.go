@@ -34,18 +34,18 @@ func webhookHandler(secret string, emailSender AsyncEmailSender) http.Handler {
 		signature, err := httpsignatures.FromRequest(r)
 		if err != nil {
 			slog.Error("webhook handler received invalid or missing signature", "error", err)
-			http.Error(w, "Invalid or Missing Signature", http.StatusBadRequest)
+			httpError(w, http.StatusBadRequest, "Invalid or Missing Signature")
 			return
 		}
 		if !signature.IsValid(secret, r) {
 			slog.Error("webhook handler received invalid signature")
-			http.Error(w, "Invalid Signature", http.StatusBadRequest)
+			httpError(w, http.StatusBadRequest, "Invalid Signature")
 			return
 		}
 		var req webhook.Request
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			slog.Error("webhook handler cannot unmarshal request body", "error", err)
-			http.Error(w, "Invalid Input", http.StatusBadRequest)
+			httpError(w, http.StatusBadRequest, "Invalid Input")
 			return
 		}
 		if req.Event == webhook.EventBuild && req.Action == webhook.ActionUpdated && req.Build != nil && req.Build.Status == "failure" {
@@ -61,9 +61,13 @@ func withRecovery(next http.Handler) http.Handler {
 		defer func() {
 			if err := recover(); err != nil {
 				slog.Error("http handler panic recovered", "method", r.Method, "path", r.URL.Path, "error", err)
-				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				httpError(w, http.StatusInternalServerError, "Internal Server Error")
 			}
 		}()
 		next.ServeHTTP(w, r)
 	})
+}
+
+func httpError(w http.ResponseWriter, statusCode int, msg string) {
+	http.Error(w, msg, statusCode)
 }

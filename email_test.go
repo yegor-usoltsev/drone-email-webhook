@@ -229,7 +229,6 @@ type MessagesSummaryResponse struct {
 	Messages []MessageSummary `json:"messages"`
 }
 
-//nolint:tagliatelle
 type MessageSummary struct {
 	From    mail.Address   `json:"From"`
 	To      []mail.Address `json:"To"`

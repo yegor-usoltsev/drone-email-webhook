@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/kelseyhightower/envconfig"
 )
 
@@ -19,11 +21,11 @@ type Config struct {
 	EmailBCC          []string `split_words:"true" required:"false"`
 }
 
-func NewConfigFromEnv() Config {
+func NewConfigFromEnv() (Config, error) {
 	var cfg Config
 	if err := envconfig.Process(envPrefix, &cfg); err != nil {
 		_ = envconfig.Usage(envPrefix, &cfg)
-		panic(err)
+		return cfg, fmt.Errorf("config: %w", err)
 	}
-	return cfg
+	return cfg, nil
 }

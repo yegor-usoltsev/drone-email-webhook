@@ -26,7 +26,7 @@ func TestNewServer(t *testing.T) {
 	assert.Equal(t, serverIdleTimeout, server.IdleTimeout)
 }
 
-func TestServer_StartAsync_Stop(t *testing.T) {
+func TestServer_Start_Stop(t *testing.T) {
 	t.Parallel()
 	cfg := Config{
 		ServerHost: "localhost",
@@ -35,11 +35,12 @@ func TestServer_StartAsync_Stop(t *testing.T) {
 	handler := http.NewServeMux()
 	server := NewServer(cfg, handler)
 
-	assert.NotPanics(t, func() { server.StartAsync() })
-	assert.NotPanics(t, func() { server.Stop() })
+	err := server.Start()
+	require.NoError(t, err)
+	server.Stop()
 }
 
-func TestServer_StartAsync_AddressAlreadyInUse(t *testing.T) {
+func TestServer_Start_AddressAlreadyInUse(t *testing.T) {
 	t.Parallel()
 	var lc net.ListenConfig
 	listener, err := lc.Listen(t.Context(), "tcp", "127.0.0.1:0")
@@ -54,5 +55,6 @@ func TestServer_StartAsync_AddressAlreadyInUse(t *testing.T) {
 	handler := http.NewServeMux()
 	server := NewServer(cfg, handler)
 
-	assert.Panics(t, func() { server.StartAsync() })
+	err = server.Start()
+	assert.Error(t, err)
 }

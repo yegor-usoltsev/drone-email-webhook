@@ -28,8 +28,8 @@ var (
 	//go:embed email.txt
 	textTemplStr string
 
-	htmlTempl = htmlTemplate.Must(htmlTemplate.New("html").Parse(htmlTemplStr)) //nolint:gochecknoglobals
-	textTempl = textTemplate.Must(textTemplate.New("text").Parse(textTemplStr)) //nolint:gochecknoglobals
+	htmlTempl = htmlTemplate.Must(htmlTemplate.New("html").Parse(htmlTemplStr))
+	textTempl = textTemplate.Must(textTemplate.New("text").Parse(textTemplStr))
 )
 
 type EmailSender struct {
@@ -123,7 +123,6 @@ func (s *EmailSender) Send(req *webhook.Request) error {
 		return fmt.Errorf("email sender cannot execute text template: %w", err)
 	}
 
-	//nolint:exhaustruct
 	emailMsg := &email.Email{
 		From:    data.From,
 		To:      []string{data.To},

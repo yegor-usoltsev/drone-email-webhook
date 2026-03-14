@@ -66,15 +66,5 @@ release:
   name_template: "v{{ .Version }}"
   footer: |
     ## Docker images
-
-    Docker Hub:
-    - `yusoltsev/drone-email-webhook:v{{ .Version }}`
-    - `yusoltsev/drone-email-webhook:v{{ .Major }}.{{ .Minor }}`
-    - `yusoltsev/drone-email-webhook:v{{ .Major }}`
-    - `yusoltsev/drone-email-webhook:latest`
-
-    GHCR:
-    - `ghcr.io/yegor-usoltsev/drone-email-webhook:v{{ .Version }}`
-    - `ghcr.io/yegor-usoltsev/drone-email-webhook:v{{ .Major }}.{{ .Minor }}`
-    - `ghcr.io/yegor-usoltsev/drone-email-webhook:v{{ .Major }}`
-    - `ghcr.io/yegor-usoltsev/drone-email-webhook:latest`
+    - [`yusoltsev/drone-email-webhook:{{ .Version }}`](https://hub.docker.com/r/yusoltsev/drone-email-webhook/tags?name={{ .Version }})
+    - [`ghcr.io/yegor-usoltsev/drone-email-webhook:{{ .Version }}`](https://github.com/yegor-usoltsev/drone-email-webhook/pkgs/container/drone-email-webhook)

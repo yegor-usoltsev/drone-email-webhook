@@ -10,9 +10,9 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/docker/go-connections/nat"
 	"github.com/drone/drone-go/drone"
 	"github.com/drone/drone-go/plugin/webhook"
+	"github.com/moby/moby/api/types/network"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	tc "github.com/testcontainers/testcontainers-go"
@@ -194,13 +194,13 @@ type MailpitClient struct {
 	searchURL string
 }
 
-func NewMailpitClient(t *testing.T, host string, smtpPort, httpPort nat.Port) *MailpitClient {
+func NewMailpitClient(t *testing.T, host string, smtpPort, httpPort network.Port) *MailpitClient {
 	t.Helper()
 	return &MailpitClient{
 		t:         t,
 		host:      host,
-		smtpPort:  smtpPort.Int(),
-		httpPort:  httpPort.Int(),
+		smtpPort:  int(smtpPort.Num()),
+		httpPort:  int(httpPort.Num()),
 		searchURL: "http://" + net.JoinHostPort(host, httpPort.Port()) + "/api/v1/search",
 	}
 }

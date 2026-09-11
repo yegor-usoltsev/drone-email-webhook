@@ -22,16 +22,14 @@ import (
 func setupMailpit(t *testing.T) *MailpitClient {
 	t.Helper()
 	container, err := tc.GenericContainer(t.Context(), tc.GenericContainerRequest{
-		ContainerRequest: tc.ContainerRequest{
-			Image: "axllent/mailpit:latest",
-			Env: map[string]string{
-				"MP_SMTP_AUTH_ACCEPT_ANY":     "true",
-				"MP_SMTP_AUTH_ALLOW_INSECURE": "true",
-			},
-			ExposedPorts: []string{"1025/tcp", "8025/tcp"},
-			WaitingFor:   tcWait.ForHTTP("/readyz").WithPort("8025"),
+		Image: "axllent/mailpit:latest",
+		Env: map[string]string{
+			"MP_SMTP_AUTH_ACCEPT_ANY":     "true",
+			"MP_SMTP_AUTH_ALLOW_INSECURE": "true",
 		},
-		Started: true,
+		ExposedPorts: []string{"1025/tcp", "8025/tcp"},
+		WaitingFor:   tcWait.ForHTTP("/readyz").WithPort("8025"),
+		Started:      true,
 	})
 	tc.CleanupContainer(t, container)
 	require.NoError(t, err)

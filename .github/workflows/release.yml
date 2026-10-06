@@ -39,3 +39,4 @@ jobs:
           username: yusoltsev
           password: ${{ secrets.DOCKER_PASSWORD }}
           repository: yusoltsev/drone-email-webhook
+          enable-url-completion: true

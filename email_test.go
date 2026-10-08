@@ -8,10 +8,14 @@ import (
 	"net/http"
 	"net/mail"
 	"net/url"
+	"regexp"
+	"slices"
+	"strings"
 	"testing"
 
 	"github.com/drone/drone-go/drone"
 	"github.com/drone/drone-go/plugin/webhook"
+	"github.com/jordan-wright/email"
 	"github.com/moby/moby/api/types/network"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -110,7 +114,7 @@ func TestEmailSender(t *testing.T) {
 		assert.Equal(t, []mail.Address{{Name: req.Build.AuthorName, Address: req.Build.AuthorEmail}}, msg.To)
 		assert.Equal(t, []mail.Address{{Address: cfg.EmailCC[0]}}, msg.Cc)
 		assert.Equal(t, []mail.Address{{Address: cfg.EmailBCC[0]}}, msg.Bcc)
-		assert.Equal(t, fmt.Sprintf("[%s] Failed build #%d for %s (%s)", req.Repo.Slug, req.Build.Number, req.Build.Ref, req.Build.After[:8]), msg.Subject)
+		assert.Equal(t, fmt.Sprintf("[%s] Build #%d failed on main", req.Repo.Slug, req.Build.Number), msg.Subject)
 	})
 
 	t.Run("send async with closed sender", func(t *testing.T) {
@@ -182,6 +186,126 @@ func TestEmailSender(t *testing.T) {
 		assert.NotPanics(t, func() { emailSender.Shutdown() })
 		assert.NotPanics(t, func() { emailSender.Shutdown() })
 	})
+}
+
+func TestNewEmailData(t *testing.T) {
+	t.Parallel()
+	req := buildWebhookRequest(func(req *webhook.Request) {
+		req.Build.Number = 42
+		req.Build.Message = "  Fix flaky test  \n\nLonger description"
+		req.Build.Link = "https://git.example.com/test/repo/commit/e92d9f39"
+		req.Build.Started = 1000
+		req.Build.Finished = 1192
+		req.Build.Stages = []*drone.Stage{{
+			Number: 1,
+			Name:   "default",
+			Steps: []*drone.Step{
+				{Number: 1, Name: "clone", Status: drone.StatusPassing},
+				{Number: 2, Name: "lint", Status: drone.StatusFailing, ErrIgnore: true},
+				{Number: 3, Name: "test", Status: drone.StatusFailing},
+			},
+		}}
+	})
+
+	assert.Equal(t, emailData{
+		Subject:       "[test/repo] Build #42 failed on main",
+		AuthorAvatar:  "https://example.com/avatar.png",
+		AuthorName:    "Test User",
+		BuildLink:     "https://drone.example.com/test/repo/42/1/3",
+		BuildNumber:   42,
+		CommitHash:    "e92d9f39",
+		CommitLink:    "https://git.example.com/test/repo/commit/e92d9f39",
+		CommitMessage: "Fix flaky test",
+		Duration:      "3m12s",
+		FailedSteps:   "test",
+		RefName:       "main",
+		Repository:    "test/repo",
+		ServerHost:    "drone.example.com",
+		ServerLink:    "https://drone.example.com",
+	}, newEmailData(req))
+}
+
+func TestNewEmailDataFallbacks(t *testing.T) {
+	t.Parallel()
+	data := newEmailData(buildWebhookRequest(func(req *webhook.Request) {
+		req.Build.AuthorName = ""
+		req.Build.After = "abc"
+		req.Build.Started = 2000
+		req.Build.Finished = 1000
+	}))
+
+	assert.Equal(t, "test", data.AuthorName)
+	assert.Equal(t, "abc", data.CommitHash)
+	assert.Equal(t, data.BuildLink, data.CommitLink)
+	assert.Equal(t, "0s", data.Duration)
+	assert.Equal(t, "unknown", data.FailedSteps)
+}
+
+func TestRefName(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		build drone.Build
+		want  string
+	}{
+		{drone.Build{Ref: "refs/heads/feature/login"}, "feature/login"},
+		{drone.Build{Ref: "refs/tags/v1.2.0"}, "v1.2.0"},
+		{drone.Build{Ref: "refs/pull/7/head", Event: drone.EventPullRequest, Source: "fix", Target: "main"}, "fix → main"},
+		{drone.Build{Ref: "refs/pull/7/head", Event: drone.EventPullRequest}, "refs/pull/7/head"},
+	}
+	for _, tt := range tests {
+		assert.Equal(t, tt.want, refName(&tt.build))
+	}
+}
+
+func TestFailedSteps(t *testing.T) {
+	t.Parallel()
+	stages := make([]*drone.Stage, 0, 5)
+	for i := range 5 {
+		stages = append(stages, &drone.Stage{
+			Number: i + 1,
+			Name:   fmt.Sprintf("linux-%d", i),
+			Steps:  []*drone.Step{{Number: 2, Name: "test", Status: drone.StatusFailing}},
+		})
+	}
+
+	names, link := failedSteps(&drone.Build{Stages: stages}, "https://drone.example.com/test/repo/42")
+	assert.Equal(t, "linux-0 › test, linux-1 › test, linux-2 › test and 2 more", names)
+	assert.Equal(t, "https://drone.example.com/test/repo/42/1/2", link)
+}
+
+func TestTemplates(t *testing.T) {
+	t.Parallel()
+	data := newEmailData(buildWebhookRequest(func(req *webhook.Request) {
+		req.Build.Message = `<script>alert("x")</script>`
+		req.Build.Link = "javascript:alert(1)"
+	}))
+
+	var html, text strings.Builder
+	require.NoError(t, htmlTempl.Execute(&html, &data))
+	require.NoError(t, textTempl.Execute(&text, &data))
+
+	for _, body := range []string{html.String(), text.String()} {
+		assert.NotContains(t, body, "{{")
+		assert.Contains(t, body, data.Repository)
+		assert.Contains(t, body, data.FailedSteps)
+		assert.Contains(t, body, data.BuildLink)
+	}
+	assert.NotContains(t, html.String(), "<script>")
+	assert.NotContains(t, html.String(), "javascript:")
+}
+
+func TestAttachImages(t *testing.T) {
+	t.Parallel()
+	msg := &email.Email{}
+	require.NoError(t, attachImages(msg))
+
+	sources := regexp.MustCompile(`src="cid:([^"]+)"`).FindAllStringSubmatch(htmlTemplStr, -1)
+	require.NotEmpty(t, sources)
+	for _, src := range sources {
+		assert.True(t, slices.ContainsFunc(msg.Attachments, func(a *email.Attachment) bool {
+			return a.Filename == src[1] && a.HTMLRelated
+		}), "missing inline image %s", src[1])
+	}
 }
 
 type MailpitClient struct {

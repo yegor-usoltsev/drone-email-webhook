@@ -1,13 +1,26 @@
-import { render } from "@react-email/render";
-import { mkdir, rm, writeFile } from "fs/promises";
-import { join } from "path";
-import { Email } from "./emails/email";
+// Renders the email as a Go html/template; email.go embeds the result and
+// attaches emails/static as inline images.
+import { pretty, render } from "react-email";
 
-const ourDir = join(__dirname, "out");
-await rm(ourDir, { recursive: true, force: true });
-await mkdir(ourDir, { recursive: true });
+import Email from "./emails/email";
+import type { EmailProps } from "./emails/email";
 
-const html = await render(<Email {...Email.BuildProps} />, { pretty: false });
+const props = {
+  authorAvatar: "{{.AuthorAvatar}}",
+  authorName: "{{.AuthorName}}",
+  buildLink: "{{.BuildLink}}",
+  buildNumber: "{{.BuildNumber}}",
+  commitHash: "{{.CommitHash}}",
+  commitLink: "{{.CommitLink}}",
+  commitMessage: "{{.CommitMessage}}",
+  duration: "{{.Duration}}",
+  failedSteps: "{{.FailedSteps}}",
+  imagesUrl: "cid:",
+  refName: "{{.RefName}}",
+  repository: "{{.Repository}}",
+  serverHost: "{{.ServerHost}}",
+  serverLink: "{{.ServerLink}}",
+} satisfies EmailProps;
 
-const outFile = join(ourDir, "email.html");
-await writeFile(outFile, html, "utf-8");
+const html = await pretty(await render(<Email {...props} />));
+await Bun.write(new URL("../email.html", import.meta.url), html);

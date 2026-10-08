@@ -1,15 +1,17 @@
 {
   "compilerOptions": {
-    "allowJs": true,
-    "baseUrl": ".",
-    "forceConsistentCasingInFileNames": true,
     "jsx": "react-jsx",
-    "module": "ESNext",
+    "module": "esnext",
+    "moduleDetection": "force",
     "moduleResolution": "bundler",
+    "noEmit": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "skipLibCheck": true,
     "strict": true,
-    "target": "ESNext"
+    "target": "esnext",
+    "types": ["bun"],
+    "verbatimModuleSyntax": true
   },
-  "exclude": ["node_modules"],
-  "include": ["**/*.tsx"]
+  "exclude": ["node_modules"]
 }

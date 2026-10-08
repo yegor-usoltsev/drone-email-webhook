@@ -190,6 +190,7 @@ const repository = {
   fontSize: "14px",
   lineHeight: "20px",
   margin: "0",
+  wordBreak: "break-word",
 } satisfies CSSProperties;
 
 const body = {
@@ -275,6 +276,7 @@ const footer = {
   margin: "20px 0",
   padding: "0 16px",
   textAlign: "center",
+  wordBreak: "break-word",
 } satisfies CSSProperties;
 
 const footerLink = {

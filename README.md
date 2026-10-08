@@ -1,11 +1,6 @@
 # Drone Email Webhook
 
-[![Build Status](https://github.com/yegor-usoltsev/drone-email-webhook/actions/workflows/ci.yml/badge.svg)](https://github.com/yegor-usoltsev/drone-email-webhook/actions)
-[![Codecov](https://codecov.io/github/yegor-usoltsev/drone-email-webhook/graph/badge.svg?token=Z1GET86OND)](https://codecov.io/github/yegor-usoltsev/drone-email-webhook)
-[![GitHub Release](https://img.shields.io/github/v/release/yegor-usoltsev/drone-email-webhook?sort=semver)](https://github.com/yegor-usoltsev/drone-email-webhook/releases)
-[![Docker Image (docker.io)](https://img.shields.io/docker/v/yusoltsev/drone-email-webhook?label=docker.io&sort=semver)](https://hub.docker.com/r/yusoltsev/drone-email-webhook)
-[![Docker Image (ghcr.io)](https://img.shields.io/docker/v/yusoltsev/drone-email-webhook?label=ghcr.io&sort=semver)](https://github.com/yegor-usoltsev/drone-email-webhook/pkgs/container/drone-email-webhook)
-[![Docker Image Size](https://img.shields.io/docker/image-size/yusoltsev/drone-email-webhook?sort=semver&arch=amd64)](https://hub.docker.com/r/yusoltsev/drone-email-webhook/tags)
+[![Build Status](https://github.com/yegor-usoltsev/drone-email-webhook/actions/workflows/ci.yml/badge.svg)](https://github.com/yegor-usoltsev/drone-email-webhook/actions) [![Codecov](https://codecov.io/github/yegor-usoltsev/drone-email-webhook/graph/badge.svg?token=Z1GET86OND)](https://codecov.io/github/yegor-usoltsev/drone-email-webhook) [![GitHub Release](https://img.shields.io/github/v/release/yegor-usoltsev/drone-email-webhook?sort=semver)](https://github.com/yegor-usoltsev/drone-email-webhook/releases) [![Docker Image (docker.io)](https://img.shields.io/docker/v/yusoltsev/drone-email-webhook?label=docker.io&sort=semver)](https://hub.docker.com/r/yusoltsev/drone-email-webhook) [![Docker Image (ghcr.io)](https://img.shields.io/docker/v/yusoltsev/drone-email-webhook?label=ghcr.io&sort=semver)](https://github.com/yegor-usoltsev/drone-email-webhook/pkgs/container/drone-email-webhook) [![Docker Image Size](https://img.shields.io/docker/image-size/yusoltsev/drone-email-webhook?sort=semver&arch=amd64)](https://hub.docker.com/r/yusoltsev/drone-email-webhook/tags)
 
 A webhook receiver for Drone CI. It verifies Drone's HTTP signature and emails the commit author when a build update reports a failure.
 
@@ -56,7 +51,7 @@ For SMTP authentication, set both `DRONE_EMAIL_SMTP_USERNAME` and `DRONE_EMAIL_S
 ## Email preview
 
 | Light theme | Dark theme |
-| :---: | :---: |
+| :-: | :-: |
 | ![Email preview in light theme](.github/light.png) | ![Email preview in dark theme](.github/dark.png) |
 
 ## Docker images

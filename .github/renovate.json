@@ -26,5 +26,13 @@
       "datasourceTemplate": "golang-version",
       "depNameTemplate": "go"
     }
+  ],
+  "packageRules": [
+    {
+      "matchFileNames": [
+        "email-template/package.json"
+      ],
+      "enabled": false
+    }
   ]
 }

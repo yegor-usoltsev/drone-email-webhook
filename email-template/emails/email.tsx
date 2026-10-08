@@ -144,7 +144,9 @@ const darkMode = `
   .link { color: #3886fa !important; }
   .failed { background-color: #2b1214 !important; border-color: #ef554d !important; color: #ef554d !important; }
 }
-`;
+`
+  .replaceAll(/\s+/gu, " ")
+  .trim();
 
 const fontFamily =
   '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';

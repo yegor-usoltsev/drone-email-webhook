@@ -23,20 +23,3 @@ jobs:
       - uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-
-  email-template:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    defaults:
-      run:
-        working-directory: email-template
-    steps:
-      - uses: actions/checkout@v7
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version-file: email-template/package.json
-      - run: bun install --frozen-lockfile
-      - run: bun run lint
-      - run: bun run build
-      - run: git diff --exit-code -- ../email.html

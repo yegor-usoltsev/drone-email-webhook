@@ -5,7 +5,6 @@ import {
   Column,
   Container,
   Head,
-  Heading,
   Html,
   Img,
   Link,
@@ -40,71 +39,60 @@ export default function Email(props: EmailProps) {
         <meta content="width=device-width, initial-scale=1" name="viewport" />
         <meta content="light dark" name="color-scheme" />
         <meta content="light dark" name="supported-color-schemes" />
-        <style>{darkMode}</style>
+        <style>{css}</style>
       </Head>
       <Body className="page" style={page}>
         <Preview>{`${props.failedSteps} failed: ${props.commitMessage}`}</Preview>
-        <Container style={container}>
-          <Img
-            alt="Drone"
-            height="40"
-            src={`${props.imagesUrl}logo.png`}
-            style={logo}
-            width="40"
-          />
+        <Container className="container" style={container}>
           <Section className="card" style={card}>
-            <Text className="muted" style={repository}>
-              {props.repository}
-            </Text>
-            <Row>
-              <Column style={statusColumn}>
-                <Img
-                  alt="Failed"
-                  height="24"
-                  src={`${props.imagesUrl}failed.png`}
-                  width="24"
-                />
-              </Column>
-              <Column>
-                <Heading className="heading" style={heading}>
-                  Build #{props.buildNumber} failed
-                </Heading>
-              </Column>
-            </Row>
-            <Text className="content" style={message}>
-              {props.commitMessage}
-            </Text>
-            <Text style={pills}>
-              <Pill>
-                <Img
-                  alt=""
-                  height="16"
-                  src={props.authorAvatar}
-                  style={avatar}
-                  width="16"
-                />
-                {props.authorName}
-              </Pill>
-              <Pill>
-                <Icon alt="Commit" src={`${props.imagesUrl}commit.png`} />
+            <Section className="header" style={header}>
+              <Row>
+                <Column style={logoColumn}>
+                  <Img
+                    alt="Drone"
+                    height="36"
+                    src={`${props.imagesUrl}logo.png`}
+                    width="36"
+                  />
+                </Column>
+                <Column>
+                  <Text style={heading}>Build #{props.buildNumber} failed</Text>
+                  <Text style={repository}>{props.repository}</Text>
+                </Column>
+              </Row>
+            </Section>
+            <Section className="body" style={body}>
+              <Field label="Failed">
+                <span className="failed" style={failed}>
+                  {props.failedSteps}
+                </span>
+              </Field>
+              <Field label="Time">{props.duration}</Field>
+              <Field label="Branch">
+                <Icon src={`${props.imagesUrl}branch.png`} />
+                <span style={refName}>{props.refName}</span>
+              </Field>
+              <Field label="Commit">
+                <Icon src={`${props.imagesUrl}commit.png`} />
                 <Link className="link" href={props.commitLink} style={link}>
                   {props.commitHash}
                 </Link>
-              </Pill>
-              <Pill>
-                <Icon alt="Ref" src={`${props.imagesUrl}branch.png`} />
-                {props.refName}
-              </Pill>
-            </Text>
-            <Text className="content" style={summary}>
-              <span className="failed" style={failed}>
-                {props.failedSteps}
-              </span>{" "}
-              failed after {props.duration}
-            </Text>
-            <Button className="button" href={props.buildLink} style={button}>
-              View build
-            </Button>
+              </Field>
+              <Field label="Message">{props.commitMessage}</Field>
+              <Field label="Author">
+                <Img
+                  alt=""
+                  height="18"
+                  src={props.authorAvatar}
+                  style={avatar}
+                  width="18"
+                />
+                {props.authorName}
+              </Field>
+              <Button href={props.buildLink} style={button}>
+                View build
+              </Button>
+            </Section>
           </Section>
           <Text className="muted" style={footer}>
             Sent by Drone at{" "}
@@ -118,31 +106,41 @@ export default function Email(props: EmailProps) {
   );
 }
 
-function Pill({ children }: { children: ReactNode }) {
+function Field({ children, label }: { children: ReactNode; label: string }) {
   return (
-    <span className="pill" style={pill}>
-      {children}
-    </span>
+    <Row className="row" style={row}>
+      <Column className="muted" style={key}>
+        {label}
+      </Column>
+      <Column className="content" style={value}>
+        {children}
+      </Column>
+    </Row>
   );
 }
 
-function Icon({ alt, src }: { alt: string; src: string }) {
-  return <Img alt={alt} height="16" src={src} style={icon} width="16" />;
+function Icon({ src }: { src: string }) {
+  return <Img alt="" height="16" src={src} style={icon} width="16" />;
 }
 
 // Colors follow the Drone UI themes. Apple Mail and some other clients apply
 // the dark one; the rest keep the light theme.
 // Body repeats its background on an inner cell, so the dark one covers both.
-const darkMode = `
+// Sections put their padding on an inner cell too, so phones override it there.
+const css = `
 @media (prefers-color-scheme: dark) {
   .page, .page > table > tbody > tr > td { background-color: #151a1e !important; }
   .card { background-color: #0b0d0f !important; border-color: #35354b !important; }
-  .heading { color: #d5d5dd !important; }
   .content { color: #b8b9c7 !important; }
   .muted { color: #9fa0b2 !important; }
-  .pill { background-color: #262636 !important; color: #b8b9c7 !important; }
   .link { color: #3886fa !important; }
+  .row { border-color: #35354b !important; }
   .failed { background-color: #2b1214 !important; border-color: #ef554d !important; color: #ef554d !important; }
+}
+@media only screen and (max-width: 600px) {
+  .container > tbody > tr > td { padding: 0 !important; }
+  .header > tbody > tr > td { padding: 16px !important; }
+  .body > tbody > tr > td { padding: 4px 16px 20px !important; }
 }
 `
   .replaceAll(/\s+/gu, " ")
@@ -162,71 +160,91 @@ const container = {
   padding: "32px 16px",
 } satisfies CSSProperties;
 
-const logo = {
-  margin: "0 auto 24px",
-} satisfies CSSProperties;
-
 const card = {
   backgroundColor: "#ffffff",
   border: "1px solid #e4e4eb",
   borderRadius: "6px",
-  padding: "24px",
 } satisfies CSSProperties;
 
-const repository = {
-  color: "#6b6d85",
-  fontSize: "14px",
-  lineHeight: "20px",
-  margin: "0 0 8px",
+const header = {
+  backgroundColor: "#0a3364",
+  borderRadius: "5px 5px 0 0",
+  padding: "20px 24px",
 } satisfies CSSProperties;
 
-const statusColumn = {
-  verticalAlign: "middle",
-  width: "34px",
+const logoColumn = {
+  verticalAlign: "top",
+  width: "48px",
 } satisfies CSSProperties;
 
 const heading = {
-  color: "#22222a",
-  fontSize: "22px",
+  color: "#ffffff",
+  fontSize: "20px",
   fontWeight: 600,
-  lineHeight: "28px",
+  lineHeight: "26px",
   margin: "0",
 } satisfies CSSProperties;
 
-const message = {
-  color: "#383946",
-  fontSize: "16px",
-  lineHeight: "24px",
-  margin: "16px 0 12px",
-} satisfies CSSProperties;
-
-const pills = {
+const repository = {
+  color: "#a9bcd8",
   fontSize: "14px",
   lineHeight: "20px",
-  margin: "0 0 16px",
+  margin: "0",
 } satisfies CSSProperties;
 
-const pill = {
-  backgroundColor: "#f3f3fa",
-  borderRadius: "4px",
+const body = {
+  padding: "8px 24px 24px",
+} satisfies CSSProperties;
+
+const row = {
+  borderBottom: "1px solid #e4e4eb",
+} satisfies CSSProperties;
+
+const key = {
+  color: "#6b6d85",
+  fontSize: "14px",
+  lineHeight: "20px",
+  padding: "12px 12px 12px 0",
+  verticalAlign: "top",
+  width: "72px",
+} satisfies CSSProperties;
+
+const value = {
   color: "#383946",
-  display: "inline-block",
-  margin: "0 6px 6px 0",
-  padding: "4px 8px",
+  fontSize: "14px",
+  lineHeight: "20px",
+  padding: "12px 0",
+  verticalAlign: "top",
   wordBreak: "break-word",
 } satisfies CSSProperties;
 
-const avatar = {
-  borderRadius: "50%",
+// A single box, so a long list of steps does not wrap into broken borders.
+const failed = {
+  backgroundColor: "#fff5f5",
+  border: "1px solid #e43326",
+  borderRadius: "4px",
+  color: "#e43326",
+  display: "inline-block",
+  fontWeight: 600,
+  padding: "0 6px",
+} satisfies CSSProperties;
+
+// Refs are identifiers, so they break anywhere instead of leaving the icon
+// alone on a line.
+const refName = {
+  wordBreak: "break-all",
+} satisfies CSSProperties;
+
+const icon = {
   display: "inline",
   marginRight: "6px",
   verticalAlign: "-3px",
 } satisfies CSSProperties;
 
-const icon = {
-  display: "inline",
-  marginRight: "4px",
-  verticalAlign: "-3px",
+const avatar = {
+  ...icon,
+  borderRadius: "50%",
+  verticalAlign: "-4px",
 } satisfies CSSProperties;
 
 const link = {
@@ -234,39 +252,28 @@ const link = {
   textDecoration: "none",
 } satisfies CSSProperties;
 
-const summary = {
-  color: "#383946",
-  fontSize: "14px",
-  lineHeight: "24px",
-  margin: "0 0 24px",
-} satisfies CSSProperties;
-
-const failed = {
-  backgroundColor: "#fff5f5",
-  border: "1px solid #e43326",
-  borderRadius: "4px",
-  color: "#e43326",
-  fontWeight: 600,
-  padding: "2px 8px",
-} satisfies CSSProperties;
-
 const button = {
   backgroundColor: "#0278d5",
   borderRadius: "4px",
+  boxSizing: "border-box",
   color: "#ffffff",
   fontSize: "14px",
   fontWeight: 600,
   letterSpacing: "0.5px",
   lineHeight: "20px",
-  padding: "10px 20px",
+  marginTop: "24px",
+  padding: "12px 20px",
+  textAlign: "center",
   textTransform: "uppercase",
+  width: "100%",
 } satisfies CSSProperties;
 
 const footer = {
   color: "#6b6d85",
   fontSize: "12px",
-  lineHeight: "16px",
-  margin: "24px 0 0",
+  lineHeight: "18px",
+  margin: "20px 0",
+  padding: "0 16px",
   textAlign: "center",
 } satisfies CSSProperties;
 

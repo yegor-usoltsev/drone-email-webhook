@@ -2,7 +2,8 @@ package main
 
 import (
 	"bytes"
-	_ "embed"
+	"cmp"
+	"embed"
 	"fmt"
 	htmlTemplate "html/template"
 	"log/slog"
@@ -16,6 +17,7 @@ import (
 	textTemplate "text/template"
 	"time"
 
+	"github.com/drone/drone-go/drone"
 	"github.com/drone/drone-go/plugin/webhook"
 	"github.com/jordan-wright/email"
 )
@@ -27,6 +29,8 @@ var (
 	htmlTemplStr string
 	//go:embed email.txt
 	textTemplStr string
+	//go:embed email-template/emails/static
+	images embed.FS
 
 	htmlTempl = htmlTemplate.Must(htmlTemplate.New("html").Parse(htmlTemplStr))
 	textTempl = textTemplate.Must(textTemplate.New("text").Parse(textTemplStr))
@@ -71,45 +75,8 @@ func (s *EmailSender) SendAsync(req *webhook.Request) {
 }
 
 func (s *EmailSender) Send(req *webhook.Request) error {
-	author := req.Build.AuthorName
-	if author == "" {
-		author = req.Build.Author
-	}
-
-	commitHash := req.Build.After
-	if len(commitHash) > 8 {
-		commitHash = commitHash[:8]
-	}
-
-	data := struct {
-		Subject         string
-		From            string
-		To              string
-		Header          string
-		Repository      string
-		Reference       string
-		CommitHash      string
-		CommitMessage   string
-		AuthorAvatar    string
-		AuthorName      string
-		DroneBuildLink  string
-		DroneServerHost string
-		DroneServerLink string
-	}{
-		Subject:         fmt.Sprintf("[%s] Failed build #%d for %s (%s)", req.Repo.Slug, req.Build.Number, req.Build.Ref, commitHash),
-		From:            s.from,
-		To:              fmt.Sprintf("%s <%s>", author, req.Build.AuthorEmail),
-		Header:          fmt.Sprintf("Build #%d has failed", req.Build.Number),
-		Repository:      req.Repo.Slug,
-		Reference:       req.Build.Ref,
-		CommitHash:      commitHash,
-		CommitMessage:   strings.TrimSpace(strings.Split(req.Build.Message, "\n")[0]),
-		AuthorAvatar:    req.Build.AuthorAvatar,
-		AuthorName:      author,
-		DroneBuildLink:  fmt.Sprintf("%s/%s/%d", req.System.Link, req.Repo.Slug, req.Build.Number),
-		DroneServerHost: req.System.Host,
-		DroneServerLink: req.System.Link,
-	}
+	data := newEmailData(req)
+	to := fmt.Sprintf("%s <%s>", data.AuthorName, req.Build.AuthorEmail)
 
 	var html bytes.Buffer
 	if err := htmlTempl.Execute(&html, &data); err != nil {
@@ -124,14 +91,18 @@ func (s *EmailSender) Send(req *webhook.Request) error {
 	}
 
 	emailMsg := &email.Email{
-		From:    data.From,
-		To:      []string{data.To},
+		From:    s.from,
+		To:      []string{to},
 		Cc:      s.cc,
 		Bcc:     s.bcc,
 		Subject: data.Subject,
 		HTML:    html.Bytes(),
 		Text:    text.Bytes(),
 		Headers: textproto.MIMEHeader{},
+	}
+	if err := attachImages(emailMsg); err != nil {
+		slog.Error("email sender cannot attach images", "build_number", req.Build.Number, "error", err)
+		return fmt.Errorf("email sender cannot attach images: %w", err)
 	}
 
 	var auth smtp.Auth
@@ -140,10 +111,10 @@ func (s *EmailSender) Send(req *webhook.Request) error {
 	}
 
 	if err := emailMsg.Send(s.addr, auth); err != nil {
-		slog.Error("email sender failed to send message", "build_number", req.Build.Number, "to", data.To, "error", err)
+		slog.Error("email sender failed to send message", "build_number", req.Build.Number, "to", to, "error", err)
 		return fmt.Errorf("email sender failed to send message: %w", err)
 	}
-	slog.Info("email sender successfully sent message", "build_number", req.Build.Number, "to", data.To)
+	slog.Info("email sender successfully sent message", "build_number", req.Build.Number, "to", to)
 	return nil
 }
 
@@ -164,5 +135,111 @@ func (s *EmailSender) Shutdown() {
 		slog.Info("email sender completed shutdown")
 	case <-time.After(emailSenderShutdownTimeout):
 		slog.Error("email sender shutdown timed out")
+	}
+}
+
+// attachImages adds the template images as inline parts that email.html references by "cid:<file name>".
+func attachImages(msg *email.Email) error {
+	entries, err := images.ReadDir("email-template/emails/static")
+	if err != nil {
+		return fmt.Errorf("cannot read images: %w", err)
+	}
+	for _, entry := range entries {
+		data, err := images.ReadFile("email-template/emails/static/" + entry.Name())
+		if err != nil {
+			return fmt.Errorf("cannot read image %s: %w", entry.Name(), err)
+		}
+		attachment, err := msg.Attach(bytes.NewReader(data), entry.Name(), "image/png")
+		if err != nil {
+			return fmt.Errorf("cannot attach image %s: %w", entry.Name(), err)
+		}
+		attachment.HTMLRelated = true
+	}
+	return nil
+}
+
+// emailData holds the values that email.html and email.txt render.
+type emailData struct {
+	Subject       string
+	AuthorAvatar  string
+	AuthorName    string
+	BuildLink     string
+	BuildNumber   int64
+	CommitHash    string
+	CommitLink    string
+	CommitMessage string
+	Duration      string
+	FailedSteps   string
+	RefName       string
+	Repository    string
+	ServerHost    string
+	ServerLink    string
+}
+
+func newEmailData(req *webhook.Request) emailData {
+	build := req.Build
+	ref := refName(build)
+	buildLink := fmt.Sprintf("%s/%s/%d", req.System.Link, req.Repo.Slug, build.Number)
+	steps, stepLink := failedSteps(build, buildLink)
+	return emailData{
+		Subject:       fmt.Sprintf("[%s] Build #%d failed on %s", req.Repo.Slug, build.Number, ref),
+		AuthorAvatar:  build.AuthorAvatar,
+		AuthorName:    cmp.Or(build.AuthorName, build.Author),
+		BuildLink:     stepLink,
+		BuildNumber:   build.Number,
+		CommitHash:    build.After[:min(len(build.After), 8)],
+		CommitLink:    cmp.Or(build.Link, buildLink),
+		CommitMessage: strings.TrimSpace(strings.Split(build.Message, "\n")[0]),
+		Duration:      (time.Duration(max(build.Finished-build.Started, 0)) * time.Second).String(),
+		FailedSteps:   steps,
+		RefName:       ref,
+		Repository:    req.Repo.Slug,
+		ServerHost:    req.System.Host,
+		ServerLink:    req.System.Link,
+	}
+}
+
+// refName shortens branch and tag refs and shows pull requests as source → target.
+func refName(build *drone.Build) string {
+	if build.Event == drone.EventPullRequest && build.Source != "" && build.Target != "" {
+		return build.Source + " → " + build.Target
+	}
+	if name, ok := strings.CutPrefix(build.Ref, "refs/heads/"); ok {
+		return name
+	}
+	if name, ok := strings.CutPrefix(build.Ref, "refs/tags/"); ok {
+		return name
+	}
+	return build.Ref
+}
+
+const maxFailedSteps = 3
+
+// failedSteps names the steps that failed the build and links to the log of the first one.
+func failedSteps(build *drone.Build, buildLink string) (names, link string) {
+	var failed []string
+	link = buildLink
+	for _, stage := range build.Stages {
+		for _, step := range stage.Steps {
+			if step.Status != drone.StatusFailing || step.ErrIgnore {
+				continue
+			}
+			if len(failed) == 0 {
+				link = fmt.Sprintf("%s/%d/%d", buildLink, stage.Number, step.Number)
+			}
+			name := step.Name
+			if len(build.Stages) > 1 {
+				name = stage.Name + " › " + step.Name
+			}
+			failed = append(failed, name)
+		}
+	}
+	switch {
+	case len(failed) == 0:
+		return "unknown", link
+	case len(failed) > maxFailedSteps:
+		return fmt.Sprintf("%s and %d more", strings.Join(failed[:maxFailedSteps], ", "), len(failed)-maxFailedSteps), link
+	default:
+		return strings.Join(failed, ", "), link
 	}
 }

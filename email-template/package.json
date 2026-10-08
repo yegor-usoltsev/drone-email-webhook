@@ -3,21 +3,23 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "email dev",
-    "preview": "bun run preview.jsx",
-    "build": "bun run build.jsx"
+    "build": "bun ./build.tsx",
+    "preview": "bun ./preview.tsx",
+    "lint": "tsc && ultracite check",
+    "lint:fix": "tsc && ultracite fix"
   },
   "dependencies": {
-    "@react-email/components": "0.0.36",
-    "@react-email/render": "1.0.6",
-    "react": "19.1.0",
-    "react-dom": "19.1.0",
-    "react-email": "4.0.7",
-    "tailwindcss": "3.4.17",
-    "tailwindcss-preset-email": "1.4.0"
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "react-email": "6.11.1"
   },
   "devDependencies": {
-    "@types/react": "19.1.2",
-    "@types/react-dom": "19.1.2"
+    "@types/bun": "1.4.2",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "oxfmt": "0.72.0",
+    "oxlint": "1.87.0",
+    "typescript": "7.0.2",
+    "ultracite": "7.12.4"
   }
 }

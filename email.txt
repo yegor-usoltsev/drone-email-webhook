@@ -1,11 +1,12 @@
-{{.Header}}
+{{.Repository}}: build #{{.BuildNumber}} failed
 
-Repository: {{.Repository}}
-Reference: {{.Reference}}
-Commit Hash: {{.CommitHash}}
-Commit Message: {{.CommitMessage}}
-Author: {{.AuthorName}}
+Failed:  {{.FailedSteps}}
+Time:    {{.Duration}}
+Branch:  {{.RefName}}
+Commit:  {{.CommitHash}} {{.CommitLink}}
+Message: {{.CommitMessage}}
+Author:  {{.AuthorName}}
 
-View build: {{.DroneBuildLink}}
+View build: {{.BuildLink}}
 
-You're receiving this email because of your account on {{.DroneServerLink}}
+Sent by Drone at {{.ServerLink}}

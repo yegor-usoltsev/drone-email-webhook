@@ -9,7 +9,9 @@ Go webhook receiver that emails the commit author when a Drone build fails.
 - `email.txt` is the hand-written plain-text part; update it with the HTML.
 - Images live in `email-template/emails/static`. `email.go` embeds and attaches them inline, and the HTML references them as `cid:<file name>`, because Gmail and Outlook block `data:` URIs.
 - Colors follow the Drone UI light and dark themes; dark mode is a `prefers-color-scheme` block in `email.tsx`.
-- `bun run preview` writes `out/email.html` with sample data; `bun run lint` runs TypeScript and Ultracite.
+- `bun run preview` writes `out/email.html` with sample data.
+- Run `bun run lint` by hand after changing the template: it type-checks and runs Ultracite (oxlint and oxfmt). `bun run lint:fix` applies fixes.
+- `tsc` is TypeScript 7 from `@typescript/native`. The `typescript` package stays on 6 because `eslint-plugin-github` loads typescript-eslint, which rejects 7.
 
 ## Checks
 

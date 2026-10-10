@@ -1,17 +1,18 @@
 import { defineConfig } from "oxlint";
+import antiSlop from "ultracite/oxlint/anti-slop";
 import core from "ultracite/oxlint/core";
+import { jsPluginSettings, selectJsPlugins } from "ultracite/oxlint/js-plugins";
 import react from "ultracite/oxlint/react";
 
+const jsPlugins = selectJsPlugins(["github", "sonarjs", "react-doctor"]);
+
 export default defineConfig({
-  extends: [core, react],
-  ignorePatterns: core.ignorePatterns,
-  rules: {
-    // The email reads top-down: the component first, then its parts and styles.
-    "func-style": ["error", "declaration"],
-    "no-use-before-define": ["error", { functions: false, variables: false }],
-    "react/function-component-definition": [
-      "error",
-      { namedComponents: "function-declaration" },
-    ],
+  extends: [core, react, antiSlop, jsPlugins],
+  ignorePatterns: core.ignorePatterns ?? [],
+  jsPlugins: jsPlugins.jsPlugins,
+  options: {
+    reportUnusedDisableDirectives: "error",
+    typeAware: true,
   },
+  settings: jsPluginSettings,
 });

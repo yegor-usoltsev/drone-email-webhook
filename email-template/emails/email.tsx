@@ -24,7 +24,6 @@ export interface EmailProps {
   commitMessage: string;
   duration: string;
   failedSteps: string;
-  // Prefix for the files in emails/static, "cid:" in the sent email.
   imagesUrl: string;
   refName: string;
   repository: string;
@@ -32,101 +31,6 @@ export interface EmailProps {
   serverLink: string;
 }
 
-export default function Email(props: EmailProps) {
-  return (
-    <Html>
-      <Head>
-        <meta content="width=device-width, initial-scale=1" name="viewport" />
-        <meta content="light dark" name="color-scheme" />
-        <meta content="light dark" name="supported-color-schemes" />
-        <style>{css}</style>
-      </Head>
-      <Body className="page" style={page}>
-        <Preview>{`${props.failedSteps} failed: ${props.commitMessage}`}</Preview>
-        <Container className="container" style={container}>
-          <Section className="card" style={card}>
-            <Section className="header" style={header}>
-              <Row>
-                <Column style={logoColumn}>
-                  <Img
-                    alt="Drone"
-                    height="36"
-                    src={`${props.imagesUrl}logo.png`}
-                    width="36"
-                  />
-                </Column>
-                <Column>
-                  <Text style={heading}>Build #{props.buildNumber} failed</Text>
-                  <Text style={repository}>{props.repository}</Text>
-                </Column>
-              </Row>
-            </Section>
-            <Section className="body" style={body}>
-              <Field label="Failed">
-                <span className="failed" style={failed}>
-                  {props.failedSteps}
-                </span>
-              </Field>
-              <Field label="Time">{props.duration}</Field>
-              <Field label="Branch">
-                <Icon src={`${props.imagesUrl}branch.png`} />
-                <span style={refName}>{props.refName}</span>
-              </Field>
-              <Field label="Commit">
-                <Icon src={`${props.imagesUrl}commit.png`} />
-                <Link className="link" href={props.commitLink} style={link}>
-                  {props.commitHash}
-                </Link>
-              </Field>
-              <Field label="Message">{props.commitMessage}</Field>
-              <Field label="Author">
-                <Img
-                  alt=""
-                  height="18"
-                  src={props.authorAvatar}
-                  style={avatar}
-                  width="18"
-                />
-                {props.authorName}
-              </Field>
-              <Button href={props.buildLink} style={button}>
-                View build
-              </Button>
-            </Section>
-          </Section>
-          <Text className="muted" style={footer}>
-            Sent by Drone at{" "}
-            <Link className="muted" href={props.serverLink} style={footerLink}>
-              {props.serverHost}
-            </Link>
-          </Text>
-        </Container>
-      </Body>
-    </Html>
-  );
-}
-
-function Field({ children, label }: { children: ReactNode; label: string }) {
-  return (
-    <Row className="row" style={row}>
-      <Column className="muted" style={key}>
-        {label}
-      </Column>
-      <Column className="content" style={value}>
-        {children}
-      </Column>
-    </Row>
-  );
-}
-
-function Icon({ src }: { src: string }) {
-  return <Img alt="" height="16" src={src} style={icon} width="16" />;
-}
-
-// Colors follow the Drone UI themes. Apple Mail and some other clients apply
-// the dark one; the rest keep the light theme.
-// Body repeats its background on an inner cell, so the dark one covers both.
-// Sections put their padding on an inner cell too, so phones override it there.
 const css = `
 @media (prefers-color-scheme: dark) {
   .page, .page > table > tbody > tr > td { background-color: #151a1e !important; }
@@ -148,6 +52,8 @@ const css = `
 
 const fontFamily =
   '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
+
+const breakWord = "break-word";
 
 const page = {
   backgroundColor: "#f8f9fa",
@@ -190,7 +96,7 @@ const repository = {
   fontSize: "14px",
   lineHeight: "20px",
   margin: "0",
-  wordBreak: "break-word",
+  wordBreak: breakWord,
 } satisfies CSSProperties;
 
 const body = {
@@ -216,10 +122,9 @@ const value = {
   lineHeight: "20px",
   padding: "12px 0",
   verticalAlign: "top",
-  wordBreak: "break-word",
+  wordBreak: breakWord,
 } satisfies CSSProperties;
 
-// A single box, so a long list of steps does not wrap into broken borders.
 const failed = {
   backgroundColor: "#fff5f5",
   border: "1px solid #e43326",
@@ -230,8 +135,6 @@ const failed = {
   padding: "0 6px",
 } satisfies CSSProperties;
 
-// Refs are identifiers, so they break anywhere instead of leaving the icon
-// alone on a line.
 const refName = {
   wordBreak: "break-all",
 } satisfies CSSProperties;
@@ -275,10 +178,97 @@ const footer = {
   margin: "20px 0",
   padding: "0 16px",
   textAlign: "center",
-  wordBreak: "break-word",
+  wordBreak: breakWord,
 } satisfies CSSProperties;
 
 const footerLink = {
   color: "#6b6d85",
   textDecoration: "underline",
 } satisfies CSSProperties;
+
+const Field = ({ children, label }: { children: ReactNode; label: string }) => (
+  <Row className="row" style={row}>
+    <Column className="muted" style={key}>
+      {label}
+    </Column>
+    <Column className="content" style={value}>
+      {children}
+    </Column>
+  </Row>
+);
+
+const Icon = ({ src }: { src: string }) => (
+  <Img alt="" height="16" src={src} style={icon} width="16" />
+);
+
+export const Email = (props: EmailProps) => (
+  <Html>
+    <Head>
+      <meta content="width=device-width, initial-scale=1" name="viewport" />
+      <meta content="light dark" name="color-scheme" />
+      <meta content="light dark" name="supported-color-schemes" />
+      <style>{css}</style>
+    </Head>
+    <Body className="page" style={page}>
+      <Preview>{`${props.failedSteps} failed: ${props.commitMessage}`}</Preview>
+      <Container className="container" style={container}>
+        <Section className="card" style={card}>
+          <Section className="header" style={header}>
+            <Row>
+              <Column style={logoColumn}>
+                <Img
+                  alt="Drone"
+                  height="36"
+                  src={`${props.imagesUrl}logo.png`}
+                  width="36"
+                />
+              </Column>
+              <Column>
+                <Text style={heading}>Build #{props.buildNumber} failed</Text>
+                <Text style={repository}>{props.repository}</Text>
+              </Column>
+            </Row>
+          </Section>
+          <Section className="body" style={body}>
+            <Field label="Failed">
+              <span className="failed" style={failed}>
+                {props.failedSteps}
+              </span>
+            </Field>
+            <Field label="Time">{props.duration}</Field>
+            <Field label="Branch">
+              <Icon src={`${props.imagesUrl}branch.png`} />
+              <span style={refName}>{props.refName}</span>
+            </Field>
+            <Field label="Commit">
+              <Icon src={`${props.imagesUrl}commit.png`} />
+              <Link className="link" href={props.commitLink} style={link}>
+                {props.commitHash}
+              </Link>
+            </Field>
+            <Field label="Message">{props.commitMessage}</Field>
+            <Field label="Author">
+              <Img
+                alt=""
+                height="18"
+                src={props.authorAvatar}
+                style={avatar}
+                width="18"
+              />
+              {props.authorName}
+            </Field>
+            <Button href={props.buildLink} style={button}>
+              View build
+            </Button>
+          </Section>
+        </Section>
+        <Text className="muted" style={footer}>
+          Sent by Drone at{" "}
+          <Link className="muted" href={props.serverLink} style={footerLink}>
+            {props.serverHost}
+          </Link>
+        </Text>
+      </Container>
+    </Body>
+  </Html>
+);

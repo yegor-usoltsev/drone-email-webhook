@@ -6,7 +6,8 @@
     "build": "bun ./build.tsx",
     "lint": "tsc && ultracite check",
     "lint:fix": "tsc && ultracite fix",
-    "preview": "bun ./preview.tsx"
+    "preview": "bun ./preview.tsx",
+    "prepare": "cd .. && husky email-template/.husky"
   },
   "dependencies": {
     "react": "19.3.0",

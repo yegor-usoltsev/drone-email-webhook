@@ -1,5 +1,3 @@
-// Renders the email as a Go html/template; email.go embeds the result and
-// attaches emails/static as inline images.
 import { render } from "react-email";
 
 import { Email } from "./emails/email";

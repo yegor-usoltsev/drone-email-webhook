@@ -14,10 +14,6 @@ import {
   Text,
 } from "react-email";
 
-/**
- * Values the failure email shows. build.tsx passes Go template fields, and
- * preview.tsx passes sample data.
- */
 export interface EmailProps {
   authorAvatar: string;
   authorName: string;
@@ -28,7 +24,6 @@ export interface EmailProps {
   commitMessage: string;
   duration: string;
   failedSteps: string;
-  // Prefix for the files in emails/static, "cid:" in the sent email.
   imagesUrl: string;
   refName: string;
   repository: string;
@@ -36,10 +31,6 @@ export interface EmailProps {
   serverLink: string;
 }
 
-// Colors follow the Drone UI themes. Apple Mail and some other clients apply
-// the dark one; the rest keep the light theme.
-// Body repeats its background on an inner cell, so the dark one covers both.
-// Sections put their padding on an inner cell too, so phones override it there.
 const css = `
 @media (prefers-color-scheme: dark) {
   .page, .page > table > tbody > tr > td { background-color: #151a1e !important; }
@@ -134,7 +125,6 @@ const value = {
   wordBreak: breakWord,
 } satisfies CSSProperties;
 
-// A single box, so a long list of steps does not wrap into broken borders.
 const failed = {
   backgroundColor: "#fff5f5",
   border: "1px solid #e43326",
@@ -145,8 +135,6 @@ const failed = {
   padding: "0 6px",
 } satisfies CSSProperties;
 
-// Refs are identifiers, so they break anywhere instead of leaving the icon
-// alone on a line.
 const refName = {
   wordBreak: "break-all",
 } satisfies CSSProperties;
@@ -213,12 +201,6 @@ const Icon = ({ src }: { src: string }) => (
   <Img alt="" height="16" src={src} style={icon} width="16" />
 );
 
-/**
- * The failure email: a header with the build number, then a fact table.
- *
- * @param props - Values to show; see EmailProps.
- * @returns The email element.
- */
 export const Email = (props: EmailProps) => (
   <Html>
     <Head>

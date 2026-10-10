@@ -1,4 +1,3 @@
-// Renders the email with sample data to out/email.html for a browser check.
 import { render } from "react-email";
 
 import { Email } from "./emails/email";

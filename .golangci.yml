@@ -93,6 +93,7 @@ formatters:
   exclusions:
     paths:
       - builtin/
+      - email-template/
       - examples/
       - third_party/
       - vendor/

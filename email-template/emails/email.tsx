@@ -14,6 +14,10 @@ import {
   Text,
 } from "react-email";
 
+/**
+ * Values the failure email shows. build.tsx passes Go template fields, and
+ * preview.tsx passes sample data.
+ */
 export interface EmailProps {
   authorAvatar: string;
   authorName: string;
@@ -32,6 +36,12 @@ export interface EmailProps {
   serverLink: string;
 }
 
+/**
+ * The failure email: a header with the build number, then a fact table.
+ *
+ * @param props - Values to show; see EmailProps.
+ * @returns The email element.
+ */
 export function Email(props: EmailProps) {
   return (
     <Html>

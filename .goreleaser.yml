@@ -65,5 +65,6 @@ release:
     name: drone-email-webhook
   name_template: "v{{ .Version }}"
   footer: |
+    ## Docker images
     - [`yusoltsev/drone-email-webhook:{{ .Version }}`](https://hub.docker.com/r/yusoltsev/drone-email-webhook/tags?name={{ .Version }})
     - [`ghcr.io/yegor-usoltsev/drone-email-webhook:{{ .Version }}`](https://github.com/yegor-usoltsev/drone-email-webhook/pkgs/container/drone-email-webhook)

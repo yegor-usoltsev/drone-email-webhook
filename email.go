@@ -138,6 +138,7 @@ func (s *EmailSender) Shutdown() {
 	}
 }
 
+// attachImages adds the template images as inline parts that email.html references by "cid:<file name>".
 func attachImages(msg *email.Email) error {
 	entries, err := images.ReadDir("email-template/emails/static")
 	if err != nil {
@@ -157,6 +158,7 @@ func attachImages(msg *email.Email) error {
 	return nil
 }
 
+// emailData holds the values that email.html and email.txt render.
 type emailData struct {
 	Subject       string
 	AuthorAvatar  string
@@ -197,6 +199,7 @@ func newEmailData(req *webhook.Request) emailData {
 	}
 }
 
+// refName shortens branch and tag refs and shows pull requests as source → target.
 func refName(build *drone.Build) string {
 	if build.Event == drone.EventPullRequest && build.Source != "" && build.Target != "" {
 		return build.Source + " → " + build.Target
@@ -212,6 +215,7 @@ func refName(build *drone.Build) string {
 
 const maxFailedSteps = 3
 
+// failedSteps names the steps that failed the build and links to the log of the first one.
 func failedSteps(build *drone.Build, buildLink string) (names, link string) {
 	var failed []string
 	link = buildLink

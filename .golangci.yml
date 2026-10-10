@@ -4,6 +4,7 @@ version: "2"
 linters:
   default: none
   enable:
+    # bugs and correctness
     - bodyclose
     - copyloopvar
     - errcheck
@@ -14,6 +15,7 @@ linters:
     - staticcheck
     - unused
 
+    # style and code quality
     - dupl
     - forbidigo
     - gochecknoinits
@@ -30,6 +32,7 @@ linters:
     - unconvert
     - unparam
 
+    # error handling and security
     - errorlint
     - gosec
     - wrapcheck

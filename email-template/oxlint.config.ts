@@ -8,11 +8,7 @@ const jsPlugins = selectJsPlugins(["sonarjs", "react-doctor", "github"]);
 
 export default defineConfig({
   extends: [core, react, antiSlop, jsPlugins],
-  ignorePatterns: [
-    ...(core.ignorePatterns ?? []),
-    ".agents/skills",
-    ".claude/skills",
-  ],
+  ignorePatterns: core.ignorePatterns ?? [],
   jsPlugins: jsPlugins.jsPlugins,
   options: {
     reportUnusedDisableDirectives: "error",

@@ -6,8 +6,7 @@
     "build": "bun ./build.tsx",
     "lint": "tsc && ultracite check",
     "lint:fix": "tsc && ultracite fix",
-    "preview": "bun ./preview.tsx",
-    "prepare": "cd .. && husky email-template/.husky"
+    "preview": "bun ./preview.tsx"
   },
   "dependencies": {
     "react": "19.3.0",
@@ -20,8 +19,9 @@
     "@types/react-dom": "19.3.0",
     "@typescript/native": "npm:typescript@7.0.2",
     "eslint-plugin-github": "6.1.2",
+    "eslint-plugin-jsdoc": "65.2.4",
     "eslint-plugin-sonarjs": "4.2.2",
-    "husky": "9.1.7",
+    "eslint-plugin-tsdoc": "0.5.4",
     "oxfmt": "0.72.0",
     "oxlint": "1.87.0",
     "oxlint-plugin-react-doctor": "0.9.17",

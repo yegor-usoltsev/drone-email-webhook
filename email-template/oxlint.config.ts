@@ -27,12 +27,22 @@ export default defineConfig({
         "func-style": ["error", "declaration"],
       },
     },
+    {
+      // The email reads top-down: the component comes first, then its parts and
+      // styles, so it references variables declared below it.
+      files: ["**/emails/email.tsx"],
+      rules: {
+        "no-use-before-define": [
+          "error",
+          { functions: false, variables: false },
+        ],
+      },
+    },
   ],
   rules: {
     "func-style": ["error", "expression"],
     "import/no-default-export": "error",
-    // The email reads top-down: the component first, then its parts and styles.
-    "no-use-before-define": ["error", { functions: false, variables: false }],
+    "no-use-before-define": ["error", { functions: false }],
     "react/function-component-definition": [
       "error",
       {

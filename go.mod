@@ -1,13 +1,13 @@
 module github.com/yegor-usoltsev/drone-email-webhook
 
-go 1.27.1
+go 1.27.2
 
 require (
 	github.com/99designs/httpsignatures-go v0.0.0-20170731043157-88528bf4ca7e
 	github.com/drone/drone-go v1.7.1
 	github.com/jordan-wright/email v4.0.1-0.20210109023952-943e75fe5223+incompatible
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/moby/moby/api v1.56.0
+	github.com/moby/moby/api v1.56.1
 	github.com/stretchr/testify v1.12.1
 	github.com/testcontainers/testcontainers-go v0.44.0
 )

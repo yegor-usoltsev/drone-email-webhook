@@ -2,7 +2,7 @@
 // attaches emails/static as inline images.
 import { render } from "react-email";
 
-import Email from "./emails/email";
+import { Email } from "./emails/email";
 import type { EmailProps } from "./emails/email";
 
 const props = {

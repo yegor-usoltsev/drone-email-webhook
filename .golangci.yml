@@ -69,6 +69,7 @@ linters:
   exclusions:
     paths:
       - builtin/
+      - email-template/node_modules/
       - examples/
       - third_party/
       - vendor/

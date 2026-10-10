@@ -32,7 +32,7 @@ export interface EmailProps {
   serverLink: string;
 }
 
-export default function Email(props: EmailProps) {
+export function Email(props: EmailProps) {
   return (
     <Html>
       <Head>
@@ -149,6 +149,8 @@ const css = `
 const fontFamily =
   '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
 
+const breakWord = "break-word";
+
 const page = {
   backgroundColor: "#f8f9fa",
   color: "#383946",
@@ -190,7 +192,7 @@ const repository = {
   fontSize: "14px",
   lineHeight: "20px",
   margin: "0",
-  wordBreak: "break-word",
+  wordBreak: breakWord,
 } satisfies CSSProperties;
 
 const body = {
@@ -216,7 +218,7 @@ const value = {
   lineHeight: "20px",
   padding: "12px 0",
   verticalAlign: "top",
-  wordBreak: "break-word",
+  wordBreak: breakWord,
 } satisfies CSSProperties;
 
 // A single box, so a long list of steps does not wrap into broken borders.
@@ -275,7 +277,7 @@ const footer = {
   margin: "20px 0",
   padding: "0 16px",
   textAlign: "center",
-  wordBreak: "break-word",
+  wordBreak: breakWord,
 } satisfies CSSProperties;
 
 const footerLink = {

@@ -12,6 +12,11 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v7
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+        working-directory: email-template
+      - run: bun run lint
+        working-directory: email-template
       - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod

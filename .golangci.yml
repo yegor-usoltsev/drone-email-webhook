@@ -4,7 +4,6 @@ version: "2"
 linters:
   default: none
   enable:
-    # bugs and correctness
     - bodyclose
     - copyloopvar
     - errcheck
@@ -15,7 +14,6 @@ linters:
     - staticcheck
     - unused
 
-    # style and code quality
     - dupl
     - forbidigo
     - gochecknoinits
@@ -32,7 +30,6 @@ linters:
     - unconvert
     - unparam
 
-    # error handling and security
     - errorlint
     - gosec
     - wrapcheck
@@ -69,7 +66,7 @@ linters:
   exclusions:
     paths:
       - builtin/
-      - email-template/node_modules/
+      - email-template/
       - examples/
       - third_party/
       - vendor/

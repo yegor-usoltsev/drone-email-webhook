@@ -28,7 +28,7 @@ repos:
         # with two carriage returns.
         exclude: ^email\.html$|(^|/)(\.|dot_)gitignore(\.tmpl)?$
   - repo: https://github.com/yegor-usoltsev/pre-commit-hooks
-    rev: v1.0.0
+    rev: v1.0.1
     hooks:
       - id: gitleaks
       - id: shellcheck

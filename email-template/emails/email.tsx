@@ -83,6 +83,11 @@ const logoColumn = {
   width: "48px",
 } satisfies CSSProperties;
 
+const logo = {
+  height: "36px",
+  width: "36px",
+} satisfies CSSProperties;
+
 const heading = {
   color: "#ffffff",
   fontSize: "20px",
@@ -141,14 +146,18 @@ const refName = {
 
 const icon = {
   display: "inline",
+  height: "16px",
   marginRight: "6px",
   verticalAlign: "-3px",
+  width: "16px",
 } satisfies CSSProperties;
 
 const avatar = {
   ...icon,
   borderRadius: "50%",
+  height: "18px",
   verticalAlign: "-4px",
+  width: "18px",
 } satisfies CSSProperties;
 
 const link = {
@@ -220,6 +229,7 @@ export const Email = (props: EmailProps) => (
                   alt="Drone"
                   height="36"
                   src={`${props.imagesUrl}logo.png`}
+                  style={logo}
                   width="36"
                 />
               </Column>

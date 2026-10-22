@@ -145,17 +145,22 @@ const refName = {
 } satisfies CSSProperties;
 
 const icon = {
-  display: "inline",
+  display: "block",
   height: "16px",
-  marginRight: "6px",
-  verticalAlign: "-3px",
+  width: "16px",
+} satisfies CSSProperties;
+
+const iconColumn = {
+  padding: "2px 6px 0 0",
+  verticalAlign: "top",
   width: "16px",
 } satisfies CSSProperties;
 
 const avatar = {
-  ...icon,
   borderRadius: "50%",
+  display: "inline",
   height: "18px",
+  marginRight: "6px",
   verticalAlign: "-4px",
   width: "18px",
 } satisfies CSSProperties;
@@ -206,8 +211,13 @@ const Field = ({ children, label }: { children: ReactNode; label: string }) => (
   </Row>
 );
 
-const Icon = ({ src }: { src: string }) => (
-  <Img alt="" height="16" src={src} style={icon} width="16" />
+const Icon = ({ children, src }: { children: ReactNode; src: string }) => (
+  <Row style={{ tableLayout: "fixed" }}>
+    <Column style={iconColumn}>
+      <Img alt="" height="16" src={src} style={icon} width="16" />
+    </Column>
+    <Column>{children}</Column>
+  </Row>
 );
 
 export const Email = (props: EmailProps) => (
@@ -247,14 +257,16 @@ export const Email = (props: EmailProps) => (
             </Field>
             <Field label="Time">{props.duration}</Field>
             <Field label="Branch">
-              <Icon src={`${props.imagesUrl}branch.png`} />
-              <span style={refName}>{props.refName}</span>
+              <Icon src={`${props.imagesUrl}branch.png`}>
+                <span style={refName}>{props.refName}</span>
+              </Icon>
             </Field>
             <Field label="Commit">
-              <Icon src={`${props.imagesUrl}commit.png`} />
-              <Link className="link" href={props.commitLink} style={link}>
-                {props.commitHash}
-              </Link>
+              <Icon src={`${props.imagesUrl}commit.png`}>
+                <Link className="link" href={props.commitLink} style={link}>
+                  {props.commitHash}
+                </Link>
+              </Icon>
             </Field>
             <Field label="Message">{props.commitMessage}</Field>
             <Field label="Author">

@@ -20,7 +20,7 @@ jobs:
       - run: go test -v -race -timeout=100s -covermode=atomic -coverprofile=coverage.txt ./...
       - uses: oven-sh/setup-bun@v2 # zizmor: ignore[cache-poisoning] the Bun cache only feeds the email template checks
       - run: bun install --frozen-lockfile --cwd email-template
-      - uses: j178/prek-action@v3.0.1
+      - uses: j178/prek-action@v3.1.0
       - uses: goreleaser/goreleaser-action@v7
         with:
           args: check
